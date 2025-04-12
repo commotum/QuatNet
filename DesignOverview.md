@@ -18,7 +18,7 @@ q * r = (
 &ae \ - \ bf \ - \ cg \ - \ dh, \\
 &af \ + \ be \ + \ ch \ - \ dg, \\
 &ag \ - \ bh \ + \ ce \ + \ df, \\
-&ah \ + \ bg \ - \ cf \ + \ de \ ) 
+&ah \ + \ bg \ - \ cf \ + \ de \q ) 
 \end{aligned}
 $$
 
