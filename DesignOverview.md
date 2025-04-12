@@ -9,9 +9,7 @@ This document outlines a highly optimized standalone CUDA kernel for the Hamilto
 ## Quaternion Hamilton Product in QNNs
 
 A quaternion $q$ can be represented as
-$$
-q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}.
-$$
+$$q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}.$$
 The **Hamilton product** of $q = (a, b, c, d)$ and $r = (e, f, g, h)$ is:
 
 $$
