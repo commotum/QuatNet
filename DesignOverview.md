@@ -14,7 +14,7 @@ The **Hamilton product** of $q = (a, b, c, d)$ and $r = (e, f, g, h)$ is:
 
 $$
 \begin{aligned}
-q * r = (
+q * r = ( \quad
 &ae \ - \ bf \ - \ cg \ - \ dh, \\
 &af \ + \ be \ + \ ch \ - \ dg, \\
 &ag \ - \ bh \ + \ ce \ + \ df, \\
