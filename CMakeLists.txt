@@ -5,9 +5,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CUDA_STANDARD 17)
 
 find_package(CUDA REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS} ${CUDA_curand_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(
+    ${CUDA_INCLUDE_DIRS}
+    /usr/local/cuda/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
-set(CMAKE_CUDA_ARCHITECTURES 60 70 75 80 86) # Add this line
+set(CMAKE_CUDA_ARCHITECTURES 60 70 75 80 86)
 
 add_executable(quatnet
     src/main.cpp
