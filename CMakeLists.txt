@@ -13,5 +13,5 @@ add_executable(quatnet
     src/hamprod_kernel.cu
 )
 
-target_link_libraries(quatnet ${CUDA_LIBRARIES})
+target_link_libraries(quatnet ${CUDA_LIBRARIES} ${CUDA_curand_LIBRARY})
 set_target_properties(quatnet PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
