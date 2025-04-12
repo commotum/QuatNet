@@ -165,7 +165,7 @@ This approach:
   Often memory-bound. Proper coalescing, alignment, and large problem sizes can help approach peak memory throughput.  
 
 - **Batched Matrix Multiply**:  
-  With tiling, each input quaternion can be reused multiple times, boosting arithmetic intensity and potentially making the kernel more compute-bound. Large $N$ -by- $M$ QNN layers can see significant speedups over naive scalar implementations.
+  With tiling, each input quaternion can be reused multiple times, boosting arithmetic intensity and potentially making the kernel more compute-bound. Large $N\text{-by-}M$ QNN layers can see significant speedups over naive scalar implementations.
 
 - **Implementation Complexity**:  
   A fully optimized quaternion matrix–matrix multiply follows the same tiling logic used in traditional GEMM. The challenge is that each “multiply” is the Hamilton product, not a simple float multiply–add. Nonetheless, proper tiling and parallel reduction can dramatically improve throughput.
