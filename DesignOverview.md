@@ -67,15 +67,17 @@ __global__ void hamiltonProductKernel(
 
 ## Batched Matrix–Vector Multiplication for QNN Layers
 
-Many QNN layers do something like:
+## Batched Matrix–Vector Multiplication for QNN Layers
 
-$$\mathbf{y}_n = \sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$$
+Many QNN layers do something like this:
 
-where $W_{n,m}$ and $\mathbf{x}_m$ are quaternions. This is akin to a dense GEMM, except each “multiply” is a Hamilton product. If $N$ or $M$ is large, a naive one-thread-per-output approach can be slow because each thread loops over $M$. Instead, we use **tiling** in shared memory:
+$\mathbf{y}_n = \sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$
+
+where $\mathbf{W}_{n,m}$ and $\mathbf{x}_m$ are quaternions. This is akin to a dense GEMM, except each "multiply" is a Hamilton product. If $N$ or $M$ is large, a naive one-thread-per-output approach can be slow because each thread loops over $M$. Instead, we use **tiling** in shared memory:
 
 1. **Partition $\mathbf{x}$ into tiles** (e.g., 32 quaternions) and load each tile once into shared memory.
 2. **Assign a warp** to each output quaternion $\mathbf{y}_n$. 
-3. **Within that warp,** each thread multiplies one piece of the tile $W_{n,j} \otimes \mathbf{x}_j$ and then does a warp-level reduction (summation) of all partial results.
+3. **Within that warp**, each thread multiplies one piece of the tile: $W_{n,j} \otimes \mathbf{x}_j$, and then does a warp-level reduction (summation) of all partial results.
 4. Move to the next tile of $\mathbf{x}$ until we cover $M$. Accumulate in registers, then write $\mathbf{y}_n$ to global memory.
 
 **Why tiling?** We reuse each tile of $\mathbf{x}$ across multiple outputs, saving global memory bandwidth. We rely on warp shuffles or shared-memory reductions to combine partial sums. Recent GPU architectures also offer asynchronous copy and advanced concurrency, which can further reduce latency when done carefully.
