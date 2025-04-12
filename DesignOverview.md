@@ -69,7 +69,7 @@ __global__ void hamiltonProductKernel(
 
 Many QNN layers do something like this:
 
-$\mathbf{y}n=\sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$
+$\mathbf{y}_{n}=\sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$
 
 
 where $\mathbf{W}_{n,m}$ and $\mathbf{x}_m$ are quaternions. This is akin to a dense GEMM, except each "multiply" is a Hamilton product. If $N$ or $M$ is large, a naive one-thread-per-output approach can be slow because each thread loops over $M$. Instead, we use **tiling** in shared memory:
