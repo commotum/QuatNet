@@ -13,7 +13,8 @@ $$q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}.$$
 The **Hamilton product** of $q = (a, b, c, d)$ and $r = (e, f, g, h)$ is:
 
 $$\begin{aligned}
-q * r = &\bigl(a e - b f - c g - d h, \\
+q * r = \bigl(
+&a e - b f - c g - d h, \\
 &a f + b e + c h - d g, \\
 &a g - b h + c e + d f, \\
 &a h + b g - c f + d e\bigr).
