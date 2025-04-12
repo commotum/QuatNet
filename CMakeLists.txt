@@ -7,6 +7,8 @@ set(CMAKE_CUDA_STANDARD 17)
 find_package(CUDA REQUIRED)
 include_directories(${CUDA_INCLUDE_DIRS})
 
+set(CMAKE_CUDA_ARCHITECTURES 60 70 75 80 86) # Add this line
+
 add_executable(quatnet
     src/main.cpp
     src/quatnet_layer.cpp
