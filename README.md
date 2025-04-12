@@ -80,6 +80,7 @@ QuatNet/
 ├── tests/                   # Unit tests (planned)
 ├── CMakeLists.txt           # Build configuration
 ├── README.md                # This file
+├── DesignOverview.md        # Kernel design notes and background
 ├── LICENSE                  # MIT License
 ```
 
