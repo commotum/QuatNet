@@ -13,11 +13,11 @@ $$q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}.$$
 The **Hamilton product** of $q = (a, b, c, d)$ and $r = (e, f, g, h)$ is:
 
 $$\begin{aligned}
-q * r = \bigl(
+q * r = (
 &a e - b f - c g - d h, \\
 &a f + b e + c h - d g, \\
 &a g - b h + c e + d f, \\
-&a h + b g - c f + d e\bigr).
+&a h + b g - c f + d e)
 \end{aligned}$$
 
 This involves **16 real multiplications** and **12 real additions**. Although QNNs can use 4× fewer parameters than equivalent real-valued networks, the Hamilton product is more complex than a simple float multiply–add. Efficient parallelization on GPU is thus essential to avoid performance pitfalls.
