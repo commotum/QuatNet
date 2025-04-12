@@ -99,4 +99,4 @@ Contributions are welcome! Whether you're adding new QNN layers, optimizing the 
 - Built with CUDA for Nvidia GPUs.
 
 ## Contact
-For questions or ideas, open an issue or reach out to @commotum on X.
+For questions or ideas, open an issue or reach out to @commotum on X
