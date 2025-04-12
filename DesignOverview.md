@@ -69,7 +69,7 @@ __global__ void hamiltonProductKernel(
 
 Many QNN layers do something like this:
 
-$\mathbf{y}_n =$
+$\mathbf{y}_n=$
 $\sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$
 
 
