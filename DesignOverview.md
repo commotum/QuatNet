@@ -8,19 +8,19 @@ This document outlines a highly optimized standalone CUDA kernel for the Hamilto
 
 ## Quaternion Hamilton Product in QNNs
 
-A quaternion `q` can be represented as:
+A quaternion $q$ can be represented as
+$$
+q = w + x\mathbf{i} + y\mathbf{j} + z\mathbf{k}.
+$$
+The **Hamilton product** of $q = (a, b, c, d)$ and $r = (e, f, g, h)$ is:
 
-    q = w + x·i + y·j + z·k
-
-The Hamilton product of `q = (a, b, c, d)` and `r = (e, f, g, h)` is:
-
-    q * r = (
-        a·e − b·f − c·g − d·h,
-        a·f + b·e + c·h − d·g,
-        a·g − b·h + c·e + d·f,
-        a·h + b·g − c·f + d·e
-    )
-
+$$
+q * r = 
+\bigl(a e - b f - c g - d h,\;
+a f + b e + c h - d g,\;
+a g - b h + c e + d f,\;
+a h + b g - c f + d e\bigr).
+$$
 
 This involves **16 real multiplications** and **12 real additions**. Although QNNs can use 4× fewer parameters than equivalent real-valued networks, the Hamilton product is more complex than a simple float multiply–add. Efficient parallelization on GPU is thus essential to avoid performance pitfalls.
 
@@ -68,17 +68,17 @@ __global__ void hamiltonProductKernel(
 ## Batched Matrix–Vector Multiplication for QNN Layers
 
 Many QNN layers do something like:
-\[
+$$
 \mathbf{y}_n = \sum_{m=1}^{M} W_{n,m} \otimes \mathbf{x}_m,
-\]
-where \(W_{n,m}\) and \(\mathbf{x}_m\) are quaternions. This is akin to a dense GEMM, except each “multiply” is a Hamilton product. If \(N\) or \(M\) is large, a naive one-thread-per-output approach can be slow because each thread loops over \(M\). Instead, we use **tiling** in shared memory:
+$$
+where $W_{n,m}$ and $\mathbf{x}_m$ are quaternions. This is akin to a dense GEMM, except each “multiply” is a Hamilton product. If $N$ or $M$ is large, a naive one-thread-per-output approach can be slow because each thread loops over $M$. Instead, we use **tiling** in shared memory:
 
-1. **Partition \(\mathbf{x}\) into tiles** (e.g., 32 quaternions) and load each tile once into shared memory.
-2. **Assign a warp** to each output quaternion \(\mathbf{y}_n\). 
-3. **Within that warp,** each thread multiplies one piece of the tile \(W_{n,j} \otimes \mathbf{x}_j\) and then does a warp-level reduction (summation) of all partial results.
-4. Move to the next tile of \(\mathbf{x}\) until we cover \(M\). Accumulate in registers, then write \(\mathbf{y}_n\) to global memory.
+1. **Partition $\mathbf{x}$ into tiles** (e.g., 32 quaternions) and load each tile once into shared memory.
+2. **Assign a warp** to each output quaternion $\mathbf{y}_n$. 
+3. **Within that warp,** each thread multiplies one piece of the tile $W_{n,j} \otimes \mathbf{x}_j$ and then does a warp-level reduction (summation) of all partial results.
+4. Move to the next tile of $\mathbf{x}$ until we cover $M$. Accumulate in registers, then write $\mathbf{y}_n$ to global memory.
 
-**Why tiling?** We reuse each tile of \(\mathbf{x}\) across multiple outputs, saving global memory bandwidth. We rely on warp shuffles or shared-memory reductions to combine partial sums. Recent GPU architectures also offer asynchronous copy and advanced concurrency, which can further reduce latency when done carefully.
+**Why tiling?** We reuse each tile of $\mathbf{x}$ across multiple outputs, saving global memory bandwidth. We rely on warp shuffles or shared-memory reductions to combine partial sums. Recent GPU architectures also offer asynchronous copy and advanced concurrency, which can further reduce latency when done carefully.
 
 ---
 
@@ -152,9 +152,9 @@ __global__ void quatMatVecMulTiled(
 ```
 
 This approach:
-- Loads sub-tiles of \(\mathbf{x}\) into shared memory. 
+- Loads sub-tiles of $\mathbf{x}$ into shared memory. 
 - Distributes multiplication among threads in a warp, accumulating partial results in registers. 
-- Reduces overhead by reusing \(\mathbf{x}\) for multiple outputs if the block has multiple warps.
+- Reduces overhead by reusing $\mathbf{x}$ for multiple outputs if the block has multiple warps.
 
 ---
 
@@ -164,7 +164,7 @@ This approach:
   Often memory-bound. Proper coalescing, alignment, and large problem sizes can help approach peak memory throughput.  
 
 - **Batched Matrix Multiply**:  
-  With tiling, each input quaternion can be reused multiple times, boosting arithmetic intensity and potentially making the kernel more compute-bound. Large \(N\)-by-\(M\) QNN layers can see significant speedups over naive scalar implementations.
+  With tiling, each input quaternion can be reused multiple times, boosting arithmetic intensity and potentially making the kernel more compute-bound. Large $N$-by-$M$ QNN layers can see significant speedups over naive scalar implementations.
 
 - **Implementation Complexity**:  
   A fully optimized quaternion matrix–matrix multiply follows the same tiling logic used in traditional GEMM. The challenge is that each “multiply” is the Hamilton product, not a simple float multiply–add. Nonetheless, proper tiling and parallel reduction can dramatically improve throughput.
