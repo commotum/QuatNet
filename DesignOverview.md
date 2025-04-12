@@ -67,8 +67,6 @@ __global__ void hamiltonProductKernel(
 
 ## Batched Matrix–Vector Multiplication for QNN Layers
 
-## Batched Matrix–Vector Multiplication for QNN Layers
-
 Many QNN layers do something like this:
 
 $\mathbf{y}_n = \sum_{m=1}^{M} \mathbf{W}_{n,m} \otimes \mathbf{x}_m$
