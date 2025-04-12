@@ -66,7 +66,7 @@ __global__ void hamiltonProductKernel(
 ## Batched Matrix–Vector Multiplication for QNN Layers
 
 Many QNN layers do something like:
-$\mathbf{y}_n=\sum_{m=1}^{M} W_{n,m}\otimes\mathbf{x}_m,$
+$\mathbf{y}_n=\sum_{m=1}^{M} \mathbf{W}_{n,m}\otimes\mathbf{x}_m,$
 where $W_{n,m}$ and $\mathbf{x}_m$ are quaternions. This is akin to a dense GEMM, except each “multiply” is a Hamilton product. If $N$ or $M$ is large, a naive one-thread-per-output approach can be slow because each thread loops over $M$. Instead, we use **tiling** in shared memory:
 
 1. **Partition $\mathbf{x}$ into tiles** (e.g., 32 quaternions) and load each tile once into shared memory.
