@@ -50,3 +50,11 @@ $$
 n(\boldsymbol{x}) & =\sqrt{\boldsymbol{x} \overline{\boldsymbol{x}}}=\sqrt{\overline{\boldsymbol{x}} \boldsymbol{x}} \\ & =\sqrt{x^{(e)^2}+x^{(j)^2}+x^{(j)^2}+x^{(k)^2}} &\qquad \qquad (5)
 \end{aligned}
 $$
+
+For convenience in the following explanation, we define the purely imaginary quaternion as a quaternion with zero real part. A purely imaginary quaternion $x$ can thus be expressed as
+
+$$
+\begin{aligned}
+\boldsymbol{x}=x^{(i)} i+x^{(j)} j+x^{(k)} \boldsymbol{k} &\qquad \qquad (6)
+\end{aligned}
+$$
