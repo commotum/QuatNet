@@ -40,3 +40,13 @@ $$
 \overline{\boldsymbol{x}}=x^{(e)} -x^{(i)} \boldsymbol{i} -x^{(j)} \boldsymbol{j} -x^{(k)} \boldsymbol{k} &\qquad \qquad (4)
 \end{aligned}
 $$
+
+where $x^{(e)}$ is regarded as the real part and $x^{(i)} i+x^{(j)} j+x^{(k)} k$ as the imaginary part of $\boldsymbol{x}$.
+
+The quaternion norm of $\boldsymbol{x}, \mathrm{n}(\boldsymbol{x})$, is defined by
+
+$$
+\begin{aligned}
+n(\boldsymbol{x}) & =\sqrt{\boldsymbol{x} \overline{\boldsymbol{x}}}=\sqrt{\overline{\boldsymbol{x}} \boldsymbol{x}} \\ & =\sqrt{x^{(e)^2}+x^{(j)^2}+x^{(j)^2}+x^{(k)^2}} &\qquad \qquad (5)
+\end{aligned}
+$$
