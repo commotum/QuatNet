@@ -76,3 +76,11 @@ $$
 \boldsymbol{a}=\cos \alpha+(\sin \alpha) \cdot \boldsymbol{u} \qquad \qquad (8)
 \end{aligned}
 $$
+
+where $\alpha$ is an angle satisfying $|\alpha| \leq \pi$ and $\boldsymbol{u}$ is a purely imaginary quaternion with $n(\boldsymbol{u})=1$. Eq.(7) can always be applied whether $\boldsymbol{u}$ and $\boldsymbol{v}$ are orthogonal or not. In the case that $\boldsymbol{u}$ and $\boldsymbol{v}$ are orthogonal, rotation $\boldsymbol{g}$ is expressed from Eq.(8) as
+
+$$
+\begin{aligned} 
+\boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\ & =\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (9)
+\end{aligned}
+$$
