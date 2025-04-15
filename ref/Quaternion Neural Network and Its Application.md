@@ -81,6 +81,17 @@ where $\alpha$ is an angle satisfying $|\alpha| \leq \pi$ and $\boldsymbol{u}$ i
 
 $$
 \begin{aligned} 
-\boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\ & =\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (9)
+\boldsymbol{g}=(\cos 2 \alpha) \boldsymbol{v}+(\sin 2 \alpha) \boldsymbol{u} \times \boldsymbol{v} \qquad \qquad (9)
 \end{aligned}
 $$
+
+This shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$ (see Fig.1). In the case that $\boldsymbol{u}$ and $\boldsymbol{v}$ are not orthogonal, Eq.(7) is expressed as
+
+$$
+\begin{aligned} 
+\boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\ & =\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (10)
+\end{aligned}
+$$
+
+where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\boldsymbol{v}$ and satisfy $\boldsymbol{v}_1 / / \boldsymbol{u}$ and $\boldsymbol{v}_2 \perp \boldsymbol{u}$. Thus Eq.(10) also shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$.
+
