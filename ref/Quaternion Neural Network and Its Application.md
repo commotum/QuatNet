@@ -5,5 +5,5 @@ ${}^1$ Division of Computer Engineering, Himeji Institute of Technology, Japan \
 ${}^2$ Communications Research Laboratory, Nanotechnology Group, Japan peper@crl.go.jp
 
 
-## Abstract.  
+## Abstract  
 Quaternion neural networks are models of which computations in the neurons is based on quaternions, the four-dimensional equivalents of imaginary numbers. This paper shows by experiments that the quaternion-version of the Back Propagation (BP) algorithm achieves correct geometrical transformations in color space for an image compression problem, whereas real-valued BP algorithms fail.
