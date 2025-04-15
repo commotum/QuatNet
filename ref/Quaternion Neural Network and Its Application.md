@@ -55,6 +55,16 @@ For convenience in the following explanation, we define the purely imaginary qua
 
 $$
 \begin{aligned}
-\boldsymbol{x}=x^{(i)} i+x^{(j)} j+x^{(k)} \boldsymbol{k} \hfill(6)
+\boldsymbol{x}=x^{(i)} i+x^{(j)} j+x^{(k)} \boldsymbol{k} \qquad \qquad (6)
+\end{aligned}
+$$
+
+## 3 Geometric Description by Quaternion
+
+A rotation $\boldsymbol{g}$ in 3 D vector space $\boldsymbol{I} \in \boldsymbol{K}^3$ can be computed as
+
+$$
+\begin{aligned}
+\boldsymbol{g}=\boldsymbol{a} v \overline{\boldsymbol{a}} \qquad \qquad (6)
 \end{aligned}
 $$
