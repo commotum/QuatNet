@@ -115,3 +115,30 @@ $$
 & h(x)=\frac{1}{1+e^{-x}} &\qquad \qquad (14)
 \end{aligned}
 $$
+
+The quaternion neurons as defined above form the basis of a layered quaternion neural network. We adopt the quaternion equivalent of the BP algorithm for training the network, and define the error $E$ between the output values of the network and the target training data as
+
+$$
+\begin{aligned}
+E & =\frac{1}{2}\left(e^{(i)^2}+e^{(j)^2}+e^{(k)^2}\right) \\
+e^{(\mu)} & =y_k^{(\mu)}-d^{(\mu)}, \mu=\{i, j, k\}
+\end{aligned}
+$$
+
+where $y_k^{(\mu)}$ is the output values of the neuron in the output layer and $d^{(\mu)}$ is the target value. The connection weights $\boldsymbol{w}$ are updated by the gradient descent method:
+
+$$
+\begin{aligned}
+\boldsymbol{w}^{\text {new }} & =\boldsymbol{w}^{o l d}+\Delta \boldsymbol{w} \\
+\Delta w^{(\nu)} & =-\eta \cdot \frac{\partial E}{\partial w^{(\nu)}}, \quad \nu=\{e, i, j, k\}
+\end{aligned}
+$$
+
+where $\eta$ is a constant denoting the learning coefficient.
+
+## 5 Experimental Results
+
+### 5.1 Image Compression by Neural Networks
+To show the improved performance of quaternion BP as compared to real-valued (conventional) BP, we conduct image compression using BP on the neural networks, a task first proposed in [4]. To conduct image compression, a neural network with three layers is used, such that the number of neurons in the input layer is the same as in the output layer, and the number of neurons in the hidden layer is less than the number of neurons in the input layer. The hidden layer thus acts as a bottleneck, through which the information from the input layer to the output layer must pass with as little information loss as possible. An image to be compressed is prepared and uniformly divided into many samples of small subimages. The network is then trained by inputting the samples to both the input as well as the output neurons of the network. As a result of the training the network will try to find values of its weights such that there is a strong association between the input and the output. Such types of networks are also called autoassociators. Figure 2 shows an example of a network for the image compression problem.
+
+The following conditions are used for the computer simulations. The images used consist of $256 \times 256(=65536)$ pixels, each of which has its color values represented by 24 bits. The images are divided into 4096 samples of $4 \times 4(=16)$ pixels in size. The neural networks have three layers, and the neurons of the networks
