@@ -89,7 +89,8 @@ This shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\
 
 $$
 \begin{aligned} 
-\boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\ & =\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (10)
+\boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\
+&=\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (10)
 \end{aligned}
 $$
 
