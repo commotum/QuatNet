@@ -65,6 +65,14 @@ A rotation $\boldsymbol{g}$ in 3 D vector space $\boldsymbol{I} \in \boldsymbol{
 
 $$
 \begin{aligned}
-\boldsymbol{g}=\boldsymbol{a} v \overline{\boldsymbol{a}} \qquad \qquad (6)
+\boldsymbol{g}=\boldsymbol{a} v \overline{\boldsymbol{a}} \qquad \qquad (7)
+\end{aligned}
+$$
+
+where $\boldsymbol{a}$ is a quaternion with $n(\boldsymbol{a})=1$ and $\boldsymbol{v}$ is a purely imaginary quaternion with $n(\boldsymbol{v})=1$. This quaternion $\boldsymbol{a}$ is denoted by
+
+$$
+\begin{aligned}
+\boldsymbol{a}=\cos \alpha+(\sin \alpha) \cdot \boldsymbol{u} \qquad \qquad (8)
 \end{aligned}
 $$
