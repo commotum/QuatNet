@@ -16,6 +16,6 @@ Quaternions form a class of hypercomplex numbers that consist of a real number a
 
 $$
 \begin{equation}
-\boldsymbol{x}=x^{(e)}+x^{(i)} \boldsymbol{i}+x^{(j)} \boldsymbol{j}+x^{(k)} \boldsymbol{k} 
+\boldsymbol{x}=x^{(e)}+x^{(i)} \boldsymbol{i}+x^{(j)} \boldsymbol{j}+x^{(k)} \boldsymbol{k} \tag{1}
 \end{equation}
 $$
