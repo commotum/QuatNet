@@ -32,3 +32,11 @@ $$
 \boldsymbol{k}\boldsymbol{i} = -\boldsymbol{i}\boldsymbol{k} = \boldsymbol{j}. &\qquad \qquad (3)
 \end{aligned}
 $$
+
+From these rules it follows immediately that multiplication of quaternions is not commutative.
+
+$$
+\begin{aligned}
+\overline{\boldsymbol{x}}=x^{(e)} -x^{(i)} \boldsymbol{i} -x^{(j)} \boldsymbol{j} -x^{(k)} \boldsymbol{k} &\qquad \qquad (4)
+\end{aligned}
+$$
