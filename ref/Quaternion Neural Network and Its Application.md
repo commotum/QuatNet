@@ -95,3 +95,22 @@ $$
 
 where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\boldsymbol{v}$ and satisfy $\boldsymbol{v}_1 / / \boldsymbol{u}$ and $\boldsymbol{v}_2 \perp \boldsymbol{u}$. Thus Eq.(10) also shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$.
 
+## 4 Quaternion Neural Network
+
+In this section we propose a layered quaternion neural network model and a quaternion BP algorithm to train it. Our quaternion neuron model adopts purely imaginary quaternions as input and output signals. The output $y_j$ of quaternion neuron $j$ is expressed as
+
+$$
+\begin{aligned}
+& \boldsymbol{s}_{\boldsymbol{j}}=\sum_i \frac{\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}}{\left|\boldsymbol{w}_{\boldsymbol{j} \boldsymbol{i}}\right|}-\boldsymbol{\theta}_{\boldsymbol{j}} &\qquad \qquad (11) \\
+& \boldsymbol{y}_{\boldsymbol{j}}=f\left(\boldsymbol{s}_{\boldsymbol{j}}\right) &\qquad \qquad (12)
+\end{aligned}
+$$
+
+where $i$ denotes the indices of neurons in the previous layer, and $\boldsymbol{x}, \boldsymbol{y}, \theta, \boldsymbol{s} \in I$, $\boldsymbol{w} \in \boldsymbol{K}^4$ respectively are the vector of inputs to the neurons, the vector of outputs from the neurons, the threshold, the internal potential, and the weights of the connections to the neurons in layer $i$. The activation function $f$ is defined by
+
+$$
+\begin{aligned}
+& f(s)=h\left(s^{(i)}\right) \boldsymbol{i}+h\left(s^{(j)}\right) \boldsymbol{j}+h\left(s^{(k)}\right) \boldsymbol{k} &\qquad \qquad (13) \\
+& h(x)=\frac{1}{1+e^{-x}} &\qquad \qquad (14)
+\end{aligned}
+$$
