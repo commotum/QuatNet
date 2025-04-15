@@ -139,6 +139,42 @@ where $\eta$ is a constant denoting the learning coefficient.
 ## 5 Experimental Results
 
 ### 5.1 Image Compression by Neural Networks
-To show the improved performance of quaternion BP as compared to real-valued (conventional) BP, we conduct image compression using BP on the neural networks, a task first proposed in [4]. To conduct image compression, a neural network with three layers is used, such that the number of neurons in the input layer is the same as in the output layer, and the number of neurons in the hidden layer is less than the number of neurons in the input layer. The hidden layer thus acts as a bottleneck, through which the information from the input layer to the output layer must pass with as little information loss as possible. An image to be compressed is prepared and uniformly divided into many samples of small subimages. The network is then trained by inputting the samples to both the input as well as the output neurons of the network. As a result of the training the network will try to find values of its weights such that there is a strong association between the input and the output. Such types of networks are also called autoassociators. Figure 2 shows an example of a network for the image compression problem.
+To show the improved performance of quaternion BP as compared to real-valued (conventional) BP, we conduct image compression using BP on the neural networks, a task first proposed in [4]. To conduct image compression, a neural network with three layers is used, such that the number of neurons in the input layer is the same as in the output layer, and the number of neurons in the hidden layer is less than the number of neurons in the input layer. The hidden layer thus acts as a bottleneck, through which the information from the input layer to the output layer must pass with as little information loss as possible. An image to be compressed is prepared and uniformly divided into many samples of small subimages. The network is then trained by inputting the samples to both the input as well as the output neurons of the network. As a result of the training the network will try to find values of its weights such that there is a strong association between the input and the output. Such types of networks are also called *autoassociators*. Figure 2 shows an example of a network for the image compression problem.
 
-The following conditions are used for the computer simulations. The images used consist of $256 \times 256(=65536)$ pixels, each of which has its color values represented by 24 bits. The images are divided into 4096 samples of $4 \times 4(=16)$ pixels in size. The neural networks have three layers, and the neurons of the networks
+The following conditions are used for the computer simulations. The images used consist of $256 \times 256(=65536)$ pixels, each of which has its color values represented by 24 bits. The images are divided into 4096 samples of $4 \times 4(=16)$ pixels in size. The neural networks have three layers, and the neurons of the networks are distributed over the layers in a 48-12-48 configuration for the real-valued network and a 16-4-16 configuration for the quaternion network. These particular configurations ensure that both networks have approximately the same number of weight parameters, and thus can be used to compare performances. The image shown in Fig.3(a) is used for training the network and the image shown in Fig.3(b) is used after training for evaluating the generalizing ability of the network. The PSNR(peak-signal to noise ratio) between the original image and the output image is used as a measure to evaluate the performance of the networks.
+
+### 5.2 Results
+The networks are trained by using the image of Fig.3(a) up to the point that a certain mean square error (MSE) between the target data and the output of the network is achieved. The number of training iterations is equal to 10,000 and 9,421 for the real-valued BP and the quaternion BP respectively. Table 1 shows the PSNRs of the output images when the image of Fig.3(a) is imposed on the networks after training. Note that the expression " $\{B, G, R\}$-plane" in this table denotes the PSNRs calculated by using only the blue, green, and red components of the images respectively and "total" expresses PSNRs calculated by using all three components of the images. We see that the PSNRs are almost equal because the MSEs of the networks after training are virtually the same.
+
+After training, Fig.3(b) is input to the networks to inspect the generalization abilities of the networks. Figure 4 shows the output images of the networks. The output image obtained by real-valued BP is reddish and its tone is different from the original image. Since large portions of the training image (Fig.3(a)) are red, the network is trained so as to project most colors onto red colors. The output image obtained by the quaternion BP, on the other hand, can catch the correct tone of the image. Table 2 also shows the PSNRs of the output images when the image of Fig.3(b) is input to the networks. The PSNRs calculated for the blue and green planes in the case of real-valued BP are less than those of the red plane, a tendency that can also be observed in Fig.4(a). On the other hand, in the case of the quaternion BP, the PSNRs of the blue plane(23.01(dB)) is larger than that of the green and the red plane, and it seems that learning in the quaternion BP is not affected by the distribution of the training image (Fig.3(a)).
+
+Table 1. PSNRs of output image (used Fig.3(a) as the input of network)
+\begin{tabular}{c|cc}
+\hline & Real-valued BP (dB) & Quaternion BP (dB) \\
+\hline \hline B-Plane & 26.92 & 27.55 \\
+G-Plane & 25.60 & 25.36 \\
+R-Plane & 27.79 & 27.49 \\
+\hline \hline Total & 26.68 & 26.67 \\
+\hline
+\end{tabular}
+
+Table 2. PSNRs of output image (used Fig.3(b) as the input of network)
+\begin{tabular}{c|cc}
+\hline & Real-valued BP (dB) & Quaternion BP (dB) \\
+\hline \hline B-Plane & 16.35 & 23.01 \\
+G-Plane & 18.30 & 21.16 \\
+R-Plane & 20.38 & 21.99 \\
+\hline \hline Total & 18.04 & 21.99 \\
+\hline
+\end{tabular}
+
+## 6 Conclusion
+We have investigated the performance of a quaternion neural network trained by the BP algorithm on a color image compression problem. This network contains quaternion neurons, whose computations and variables can be described in terms of a three-dimensional subspace of the four-dimensional space based on quaternions. We formulated a back propagation algorithm for training a quaternion neural network (quaternion BP), and compared its performance with BP on a real-valued neural network. Experimental results show that quaternion BP achieves correct transformations in color space of images, whereas real-valued BP failed.
+
+The color image compression problem thus boils down to performing a transformation in 3-dimensional color space. The initial weights in the network have random values, so initially the network transforms the color space randomly. Training the network using BP results in the modification of the weights, such that eventually the transform is made as much invariant as possible. Quaternion BP utilizes the affine transformation of the vectors in its processing. This affine transformation is done in the whole color space, whereas the transformation using real-valued BP applies only to a part of the color space. Based on this, the difference between the output images, when using the test image, can be explained by the difference in the abilities of real-valued BP and quaternion BP to correctly transform the color space. A detailed analysis of this supposition remains future work.
+
+## References
+[1] Arena,P., Fortuna,L., Muscato,G., Xibilia,M. G. : Neural Networks in Multidimensional Domains. Lecture Note in Control and Information Sciences 234 (1998)
+[2] Kusakabe, T., Kouda, N., Isokawa, T., Matsui, N. : A Study of Neural Network Based on Quaternion. Proceeding of SICE Annual Conference (2002) 776-779
+[3] Conway, A. W. : Quaternions and quantum mechanics. Pont, Acad. Sci. Acta 12 (1948) 204-277
+[4] Cottrell, G. W., Munro, P., Zipser,D. : Image compression by back propagation: An example of extensional propagation. ICS report 8702 (1987)
