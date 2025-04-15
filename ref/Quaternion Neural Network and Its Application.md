@@ -16,6 +16,9 @@ Quaternions form a class of hypercomplex numbers that consist of a real number a
 
 $$
 \begin{equation}
-\boldsymbol{x}=x^{(e)}+x^{(i)} \boldsymbol{i}+x^{(j)} \boldsymbol{j}+x^{(k)} \boldsymbol{k}
+\boldsymbol{x}=x^{(e)}+x^{(i)} \boldsymbol{i}+x^{(j)} \boldsymbol{j}+x^{(k)} \boldsymbol{k} 
 \end{equation}
 $$
+
+<div align="center">$$E = mc^2$$</div>
+<div align="right">(1)</div>
