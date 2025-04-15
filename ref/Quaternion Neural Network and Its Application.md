@@ -24,8 +24,10 @@ where $x^{(e)}$ and $x^{(i)}, x^{(j)}, x^{(k)}$ are real numbers. $K^4$, the div
 
 Quaternions satisfy the following identities, known as the Hamilton rules:
 $$
-\begin{aligned}  
-& \boldsymbol{i}^2^2=\boldsymbol{j}^2=\boldsymbol{k}^2=\boldsymbol{i} \boldsymbol{j} \boldsymbol{k}=-1 \\  
-& \boldsymbol{i} \boldsymbol{j}=-\boldsymbol{j} \boldsymbol{i}=\boldsymbol{k}, \quad \boldsymbol{j} \boldsymbol{k}=-\boldsymbol{k} \boldsymbol{j}=\boldsymbol{i}, \quad \boldsymbol{k} \boldsymbol{i}=-\boldsymbol{i} \boldsymbol{k}=\boldsymbol{j}  
-\end{aligned}  
+\begin{align}
+\boldsymbol{i}^2 = \boldsymbol{j}^2 = \boldsymbol{k}^2 = \boldsymbol{i}\boldsymbol{j}\boldsymbol{k} &= -1 \\
+\boldsymbol{i}\boldsymbol{j} = -\boldsymbol{j}\boldsymbol{i} = \boldsymbol{k}, \quad 
+\boldsymbol{j}\boldsymbol{k} = -\boldsymbol{k}\boldsymbol{j} = \boldsymbol{i}, \quad
+\boldsymbol{k}\boldsymbol{i} = -\boldsymbol{i}\boldsymbol{k} = \boldsymbol{j}
+\end{align}
 $$
