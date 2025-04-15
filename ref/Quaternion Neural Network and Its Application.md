@@ -1,3 +1,7 @@
+---
+mathjax: true
+---
+
 # Quaternion Neural Network and Its Application
 
 #### Teijiro Isokawa ${}^1$, Tomoaki Kusakabe ${}^1$, Nobuyuki Matsui ${}^1$, and Ferdinand Peper ${}^2$
@@ -14,6 +18,6 @@ Though most real-valued neural network models are able to learn arbitrary nonlin
 ## 2 Quaternion
 Quaternions form a class of hypercomplex numbers that consist of a real number and three kinds of imaginary number, $\boldsymbol{i}, \boldsymbol{j}, \boldsymbol{k}$. Formally, a quaternion is defined as a vector $\boldsymbol{x}$ in a 4 -dimensional vector space, i.e.,
 
-$$
+\begin{equation}
 \boldsymbol{x}=x^{(e)}+x^{(i)} \boldsymbol{i}+x^{(j)} \boldsymbol{j}+x^{(k)} \boldsymbol{k}
-$$
+\end{equation}
