@@ -94,7 +94,7 @@ $$
 \end{aligned}
 $$
 
-where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\boldsymbol{v}$ and satisfy $\boldsymbol{v}_1 / / \boldsymbol{u}$ and $\boldsymbol{v}_2 \perp \boldsymbol{u}$. Thus Eq.(10) also shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$.
+where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\boldsymbol{v}$ and satisfy $\boldsymbol{v}_1 \parallel \boldsymbol{u}$ and $\boldsymbol{v}_2 \perp \boldsymbol{u}$. Thus Eq.(10) also shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$.
 
 ## 4 Quaternion Neural Network
 
