@@ -55,6 +55,6 @@ For convenience in the following explanation, we define the purely imaginary qua
 
 $$
 \begin{aligned}
-\boldsymbol{x}=x^{(i)} i+x^{(j)} j+x^{(k)} \boldsymbol{k} &\qquad \qquad (6)
+\boldsymbol{x}=x^{(i)} i+x^{(j)} j+x^{(k)} \boldsymbol{k} &\qquad \qquad (6) \tag*{...}
 \end{aligned}
 $$
