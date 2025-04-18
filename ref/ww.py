@@ -59,6 +59,6 @@ def lattice(d):
     h = d//2
     return product(range(-h, h+1), repeat=3)
 
-d = 2                              # ⇠ even!
+d = 10                              # ⇠ even!
 for P in lattice(d):
     print(format_quaternion(quaternion_encoding(P, d)))

@@ -59,13 +59,14 @@ def lattice(d):
     h = d//2
     return product(range(-h, h+1), repeat=3)
 
-def full_inverse(q: np.ndarray) -> np.ndarray:
-    """Return [-w, -x, -y, -z] (antipode of q)."""
-    return -q                      # element‑wise negation
+# parameters
+d = 10
+outfile = "/home/jake/Developer/QuatNet/ref/D10.txt"
 
-d = 2                              # even edge size
-for P in lattice(d):
-    q  = quaternion_encoding(P, d)
-    qi = full_inverse(q)
-    print(f"{format_quaternion(q)}")
-    print(f"{format_quaternion(qi)}")
+with open(outfile, "w") as f:
+    for P in lattice(d):
+        q = quaternion_encoding(P, d)
+        f.write(format_quaternion(q) + "\n")
+
+len_written = sum(1 for _ in open(outfile))
+len_written
