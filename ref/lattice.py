@@ -64,8 +64,7 @@ for x in coords:
         for z in coords:
             P = (x, y, z)
             q = quaternion_encoding(P, d)
-            print(f"{format_quaternion(q)}")
-            # {format_vector(P)} ↦ 
+            print(f"{format_vector(P)} ↦ {format_quaternion(q)}")
 
 
 
