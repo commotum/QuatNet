@@ -55,7 +55,7 @@ def format_vector(v):
     return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
 
 # Generate quaternion encodings for all points in a d=4 lattice
-d = 4
+d = 2
 h = d // 2
 coords = range(-h, h + 1)
 

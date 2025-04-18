@@ -20,7 +20,7 @@ def quaternion_encoding(P, d):
     # Normalized radius
     eta = rho / R if R != 0 else 0.0
     # Angle mapping
-    theta = eta * 2 * np.pi
+    theta = eta * np.pi
     
     # Unit axis
     if rho > 0:
@@ -55,7 +55,7 @@ def format_vector(v):
     return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
 
 # Generate quaternion encodings for all points in a d=4 lattice
-d = 4
+d = 2
 h = d // 2
 coords = range(-h, h + 1)
 
@@ -64,4 +64,5 @@ for x in coords:
         for z in coords:
             P = (x, y, z)
             q = quaternion_encoding(P, d)
-            print(f"{format_vector(P)} ↦ {format_quaternion(q)}")
+            print(f"{format_quaternion(q)}")
+            #{format_vector(P)} ↦ 
