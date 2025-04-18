@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import product   # cartesian product, not permutations
 
 def quaternion_encoding(P, d):
     """
@@ -20,7 +21,7 @@ def quaternion_encoding(P, d):
     # Normalized radius
     eta = rho / R if R != 0 else 0.0
     # Angle mapping
-    theta = eta * np.pi
+    theta = eta * 2 * np.pi
     
     # Unit axis
     if rho > 0:
@@ -29,8 +30,8 @@ def quaternion_encoding(P, d):
         V = np.array([1.0, 0.0, 0.0])
     
     # Quaternion components
-    w = np.cos(theta / 2)
-    s = np.sin(theta / 2)
+    w = np.cos(theta / 4)
+    s = np.sin(theta / 4)
     x_q, y_q, z_q = s * V
     
     return np.array([w, x_q, y_q, z_q])
@@ -44,8 +45,6 @@ def format_quaternion(q):
     """
     return "[" + ", ".join(f"{v:+.4f}" for v in q) + "]"
 
-from itertools import permutations
-
 # Define a formatting function for integer 3-vectors with leading sign
 def format_vector(v):
     """
@@ -55,14 +54,11 @@ def format_vector(v):
     return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
 
 # Generate quaternion encodings for all points in a d=4 lattice
-d = 2
-h = d // 2
-coords = range(-h, h + 1)
 
-for x in coords:
-    for y in coords:
-        for z in coords:
-            P = (x, y, z)
-            q = quaternion_encoding(P, d)
-            print(f"{format_quaternion(q)}")
-            #{format_vector(P)} ↦ 
+def lattice(d):
+    h = d//2
+    return product(range(-h, h+1), repeat=3)
+
+d = 2                              # ⇠ even!
+for P in lattice(d):
+    print(format_quaternion(quaternion_encoding(P, d)))
