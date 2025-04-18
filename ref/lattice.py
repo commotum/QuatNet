@@ -44,10 +44,28 @@ def format_quaternion(q):
     """
     return "[" + ", ".join(f"{v:+.4f}" for v in q) + "]"
 
-# Demonstration for d=6 on points (1,1,1), (2,2,2), (3,3,3)
-d = 6
-points = [(1, 1, 1), (2, 2, 2), (3, 3, 3), (-1, 1, 1), (-2, 2, 2), (-3, 3, 3)]
-for P in points:
-    q = quaternion_encoding(P, d)
-    print(f"P={P} -> {format_quaternion(q)}")
+from itertools import permutations
+
+# Define a formatting function for integer 3-vectors with leading sign
+def format_vector(v):
+    """
+    Format a 3-element integer tuple with leading sign and no decimals.
+    Returns a string like "[+x, -y, +z]".
+    """
+    return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
+
+# Generate quaternion encodings for all points in a d=4 lattice
+d = 4
+h = d // 2
+coords = range(-h, h + 1)
+
+for x in coords:
+    for y in coords:
+        for z in coords:
+            P = (x, y, z)
+            q = quaternion_encoding(P, d)
+            print(f"{format_quaternion(q)}")
+            # {format_vector(P)} ↦ 
+
+
 
