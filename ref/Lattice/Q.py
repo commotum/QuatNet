@@ -1,3 +1,15 @@
+"""
+
+4-Dimension Attention
+
+A compact, norm-preserving linear transform that elevates RoPE from ℝ² to ℝ⁴.
+Rather than 1D→2D planar rotations, it biquaternionically rotates 3D spatial
+coordinates alongside a temporal phase. Each 4-D block of Q/K undergoes
+block-diagonal rotor spins—guided by position and time—preserving norms
+without any learned positional parameters.
+
+"""
+
 import jax.numpy as jnp
 from einops import rearrange
 
@@ -42,7 +54,7 @@ def bique_rope(x, coords, phase, base: float = 10000.):
     Returns:
       Transformed embedding of same shape as x.
     """
-    # ensure dim can be divided into 8‑dim biquaternion slots
+    # ensure dim can be divided into 8-dim biquaternion slots
     *prefix, dim = x.shape
     assert dim % 8 == 0, "embedding dim must be multiple of 8"
     blocks = dim // 8
