@@ -27,12 +27,13 @@ def biquat_mul(qr, qi, xr, xi):
     imag = quat_mul(qr, xi) + quat_mul(qi, xr)
     return real, imag
 
-def fixed_bique_rope(x, coords, phase, base: float = 10000.):
+def bique_rope(x, coords, phase, base: float = 10000.):
     """
-    x     – real array (..., dim), dim % 8 == 0
-             interpreted as biquaternion slots of size 8.
-    coords– (...,3) real or int spatial positions
-    phase – (...)     real scalar phase (eg time)
+    Biquaternion rotary embedding coupling space & time.
+    
+    x      – real array (..., dim), dim % 8 == 0 (bi-quaternion slots)
+    coords – (...,3) spatial positions
+    phase  – (...)     scalar phase (e.g., time)
     """
     *prefix, dim = x.shape
     assert dim % 8 == 0, "dim must be multiple of 8"
@@ -40,33 +41,30 @@ def fixed_bique_rope(x, coords, phase, base: float = 10000.):
 
     # 1) split into biquaternion blocks
     xb = rearrange(x, "... (b d) -> ... b d", b=blocks, d=8)
-    xr = xb[..., :4]   # real quaternion part
-    xi = xb[..., 4:]   # imag quaternion part
+    xr = xb[..., :4]
+    xi = xb[..., 4:]
 
-    # 2) per‑block inv_freq (canonical RoPE schedule)
-    j       = jnp.arange(blocks)
+    # 2) canonical RoPE inv_freq
+    j        = jnp.arange(blocks)
     inv_freq = 1.0 / (base ** (j / (2 * blocks)))  # (b,)
 
-    # 3) build q_r from (x,y,z)
-    θ_vec = coords[..., None, :] * inv_freq               # (...,b,3)
+    # 3) spatial rotor qr from coords
+    θ_vec = coords[..., None, :] * inv_freq             # (...,b,3)
     angle = jnp.linalg.norm(θ_vec, axis=-1, keepdims=True)  # (...,b,1)
-    # avoid explicit branch
-    axis = θ_vec / jnp.where(angle==0, 1., angle)
-    wr   = jnp.cos(angle/2)
-    sr   = jnp.sin(angle/2)
-    qr   = jnp.concatenate([wr, axis * sr], axis=-1)       # (...,b,4)
+    axis  = θ_vec / jnp.where(angle == 0, 1., angle)    # avoid branch
+    wr    = jnp.cos(angle / 2)
+    sr    = jnp.sin(angle / 2)
+    qr    = jnp.concatenate([wr, axis * sr], axis=-1)     # (...,b,4)
 
-    # 4) build q_i from phase t (hyperbolic rotor)
-    φ  = phase[..., None] * inv_freq                       # (...,b)
-    ch = jnp.cosh(φ/2)[..., None]
-    sh = jnp.sinh(φ/2)[..., None]
-    # you may parameterize this axis instead of hard‑coding
-    axis_t = jnp.array([1.,0,0])[None,None,:]
-    qi     = jnp.concatenate([ch, axis_t * sh], axis=-1)   # (...,b,4)
+    # 4) hyperbolic rotor qi reusing spatial axis
+    φ  = phase[..., None] * inv_freq                     # (...,b)
+    ch = jnp.cosh(φ / 2)[..., None]
+    sh = jnp.sinh(φ / 2)[..., None]
+    qi = jnp.concatenate([ch, axis * sh], axis=-1)       # (...,b,4)
 
-    # 5) do the biquaternion multiply on each slot
-    yr, yi = biquat_mul(qr, qi, xr, xi)  # each (...,b,4)
+    # 5) apply biquaternion multiply
+    yr, yi = biquat_mul(qr, qi, xr, xi)
 
-    # 6) flatten back to (..., dim)
-    yb = jnp.concatenate([yr, yi], axis=-1)                # (...,b,8)
+    # 6) flatten back
+    yb = jnp.concatenate([yr, yi], axis=-1)              # (...,b,8)
     return rearrange(yb, "... b d -> ... (b d)")
