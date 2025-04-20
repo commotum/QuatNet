@@ -119,7 +119,7 @@ def print_encoding(P, r):
     print(f"[{format_quaternion(q)}, {rgb[0]}, {rgb[1]}, {rgb[2]}]") #{format_vector(P)} ↦ 
     
 
-r = 5  # radius of lattice
+r = 4  # radius of lattice
 for P in lattice(r):
     print_encoding(P, r)
 
