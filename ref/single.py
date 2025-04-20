@@ -14,7 +14,7 @@ def quaternion_encoding(P, d):
     """
     x, y, z = P
     h = d / 2
-    R = h
+    R = h * np.sqrt(3)
     
     # Radial distance
     rho = np.linalg.norm(P)
@@ -53,13 +53,9 @@ def format_vector(v):
     """
     return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
 
-# Generate quaternion encodings for all points in a d=4 lattice
-
-def lattice(d):
-    h = d//2
-    return product(range(-h, h+1), repeat=3)
-
-d = 4                              # ⇠ even!
-for P in lattice(d):
-    print(f"{format_quaternion(quaternion_encoding(P, d))}")
-    #{format_vector(P)} ↦ 
+# Example usage with a single vector
+P = (0, 0, 2)  # Example vector
+d = 2         # Edge length (must be even)
+q = quaternion_encoding(P, d)
+print(f"Vector: {format_vector(P)}")
+print(f"Quaternion: {format_quaternion(q)}")
