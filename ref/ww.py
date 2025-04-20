@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import product   # cartesian product, not permutations
 
-def quaternion_encoding(P, d):
+def quaternion_encoding(P, r):
     """
     Map a 3D integer lattice point P to a unit quaternion.
     
@@ -13,13 +13,11 @@ def quaternion_encoding(P, d):
         np.ndarray: Quaternion [w, x, y, z].
     """
     x, y, z = P
-    h = d / 2
-    R = h
     
     # Radial distance
     rho = np.linalg.norm(P)
     # Normalized radius
-    eta = rho / R if R != 0 else 0.0
+    eta = rho / r if r != 0 else 0.0
     # Angle mapping
     theta = eta * 2 * np.pi
     
@@ -53,13 +51,11 @@ def format_vector(v):
     """
     return "[" + ", ".join(f"{int(val):+d}" for val in v) + "]"
 
-# Generate quaternion encodings for all points in a d=4 lattice
+# Generate quaternion encodings for points in a lattice with radius r
+def lattice(r):
+    return product(range(-r, r+1), repeat=3)
 
-def lattice(d):
-    h = d//2
-    return product(range(-h, h+1), repeat=3)
-
-d = 4                              # ⇠ even!
-for P in lattice(d):
-    print(f"{format_quaternion(quaternion_encoding(P, d))}")
+r = 1  # radius of lattice
+for P in lattice(r):
+    print(f"{format_quaternion(quaternion_encoding(P, r))}")
     #{format_vector(P)} ↦ 
