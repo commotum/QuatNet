@@ -43,24 +43,26 @@ def fixed_bique_rope(x, coords, phase, base: float = 10000.):
     xr = xb[..., :4]   # real quaternion part
     xi = xb[..., 4:]   # imag quaternion part
 
-    # 2) per‑block inv_freq
-    inv_freq = 1.0 / (base ** (jnp.arange(blocks) / blocks))  # (b,)
+    # 2) per‑block inv_freq (canonical RoPE schedule)
+    j       = jnp.arange(blocks)
+    inv_freq = 1.0 / (base ** (j / (2 * blocks)))  # (b,)
 
     # 3) build q_r from (x,y,z)
     θ_vec = coords[..., None, :] * inv_freq               # (...,b,3)
     angle = jnp.linalg.norm(θ_vec, axis=-1, keepdims=True)  # (...,b,1)
-    axis  = jnp.where(angle>0, θ_vec/angle, jnp.array([1.,0,0])[None,None,:])
-    wr = jnp.cos(angle/2)
-    sr = jnp.sin(angle/2)
-    qr = jnp.concatenate([wr, axis*sr], axis=-1)           # (...,b,4)
+    # avoid explicit branch
+    axis = θ_vec / jnp.where(angle==0, 1., angle)
+    wr   = jnp.cos(angle/2)
+    sr   = jnp.sin(angle/2)
+    qr   = jnp.concatenate([wr, axis * sr], axis=-1)       # (...,b,4)
 
     # 4) build q_i from phase t (hyperbolic rotor)
-    φ = phase[..., None] * inv_freq                        # (...,b)
+    φ  = phase[..., None] * inv_freq                       # (...,b)
     ch = jnp.cosh(φ/2)[..., None]
     sh = jnp.sinh(φ/2)[..., None]
-    # pick a fixed quaternion axis for the hyperbolic part (e.g. i‑axis)
+    # you may parameterize this axis instead of hard‑coding
     axis_t = jnp.array([1.,0,0])[None,None,:]
-    qi = jnp.concatenate([ch, axis_t*sh], axis=-1)         # (...,b,4)
+    qi     = jnp.concatenate([ch, axis_t * sh], axis=-1)   # (...,b,4)
 
     # 5) do the biquaternion multiply on each slot
     yr, yi = biquat_mul(qr, qi, xr, xi)  # each (...,b,4)
