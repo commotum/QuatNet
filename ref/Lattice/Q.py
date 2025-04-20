@@ -30,41 +30,51 @@ def biquat_mul(qr, qi, xr, xi):
 def bique_rope(x, coords, phase, base: float = 10000.):
     """
     Biquaternion rotary embedding coupling space & time.
-    
-    x      – real array (..., dim), dim % 8 == 0 (bi-quaternion slots)
-    coords – (...,3) spatial positions
+
+    x      – real array (..., dim), dim % 8 == 0 (bi‑quaternion slots)
+    coords – (...,3)   spatial positions
     phase  – (...)     scalar phase (e.g., time)
     """
     *prefix, dim = x.shape
-    assert dim % 8 == 0, "dim must be multiple of 8"
+    assert dim % 8 == 0, f"dim ({dim}) must be multiple of 8"
     blocks = dim // 8
 
     # 1) split into biquaternion blocks
     xb = rearrange(x, "... (b d) -> ... b d", b=blocks, d=8)
-    xr = xb[..., :4]
-    xi = xb[..., 4:]
+    assert xb.shape[-1] == 8
+    xr, xi = xb[..., :4], xb[..., 4:]
+    assert xr.shape[-1] == xi.shape[-1] == 4
 
     # 2) canonical RoPE inv_freq
     j        = jnp.arange(blocks)
-    inv_freq = 1.0 / (base ** (j / (2 * blocks)))  # (b,)
+    inv_freq = 1.0 / (base ** (j / (2 * blocks)))  # (blocks,)
 
     # 3) spatial rotor qr from coords
-    θ_vec = coords[..., None, :] * inv_freq             # (...,b,3)
-    angle = jnp.linalg.norm(θ_vec, axis=-1, keepdims=True)  # (...,b,1)
-    axis  = θ_vec / jnp.where(angle == 0, 1., angle)    # avoid branch
-    wr    = jnp.cos(angle / 2)
-    sr    = jnp.sin(angle / 2)
-    qr    = jnp.concatenate([wr, axis * sr], axis=-1)     # (...,b,4)
+    #    coords[..., None, :] -> (..., 1, 3)
+    #    inv_freq[None, :, None] -> (1, blocks, 1) broadcasts to (..., blocks, 1)
+    θ_vec = coords[..., None, :] * inv_freq[None, :, None]  # (..., blocks, 3)
+    angle = jnp.linalg.norm(θ_vec, axis=-1, keepdims=True)  # (..., blocks, 1)
 
-    # 4) hyperbolic rotor qi reusing spatial axis
-    φ  = phase[..., None] * inv_freq                     # (...,b)
-    ch = jnp.cosh(φ / 2)[..., None]
-    sh = jnp.sinh(φ / 2)[..., None]
-    qi = jnp.concatenate([ch, axis * sh], axis=-1)       # (...,b,4)
+    # avoid division by zero
+    eps  = 1e-6
+    axis = θ_vec / jnp.maximum(angle, eps)                  # (..., blocks, 3)
+
+    wr = jnp.cos(angle / 2)
+    sr = jnp.sin(angle / 2)
+    qr = jnp.concatenate([wr, axis * sr], axis=-1)          # (..., blocks, 4)
+    assert qr.shape[-1] == 4
+
+    # 4) hyperbolic rotor qi reusing same axis
+    φ  = phase[..., None] * inv_freq[None, :, None]         # (..., blocks, 1)
+    ch = jnp.cosh(φ / 2)
+    sh = jnp.sinh(φ / 2)
+    qi = jnp.concatenate([ch, axis * sh], axis=-1)          # (..., blocks, 4)
+    assert qi.shape[-1] == 4
 
     # 5) apply biquaternion multiply
     yr, yi = biquat_mul(qr, qi, xr, xi)
+    assert yr.shape[-1] == yi.shape[-1] == 4
 
     # 6) flatten back
-    yb = jnp.concatenate([yr, yi], axis=-1)              # (...,b,8)
+    yb = jnp.concatenate([yr, yi], axis=-1)                 # (..., blocks, 8)
     return rearrange(yb, "... b d -> ... (b d)")
