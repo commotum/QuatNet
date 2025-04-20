@@ -34,7 +34,7 @@ def biquat_mul(qr, qi, xr, xi):
     Multiply two biquaternions (qr + qi·I) ⊗ (xr + xi·I).
     
     qr, qi, xr, xi each are (...,4). Returns two quaternions:
-      - real part = qr⊗xr − qi⊗xi
+      - real part = qr⊗xr - qi⊗xi
       - imag part = qr⊗xi + qi⊗xr
     """
     real = quat_mul(qr, xr) - quat_mul(qi, xi)
