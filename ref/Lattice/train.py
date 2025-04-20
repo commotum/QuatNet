@@ -116,13 +116,14 @@ def print_encoding(P, r):
         r (int): Radius/scale parameter for quaternion encoding
     """
     q, rgb = vector_to_color(P, r)
-    print(f"{format_vector(P)} ↦ [{format_quaternion(q)}, {rgb[0]}, {rgb[1]}, {rgb[2]}]")
+    print(f"[{format_quaternion(q)}, {rgb[0]}, {rgb[1]}, {rgb[2]}]") #{format_vector(P)} ↦ 
+    
 
-r = 3  # radius of lattice
+r = 5  # radius of lattice
 for P in lattice(r):
     print_encoding(P, r)
 
-print()
+#print()
 
 # Print encodings for the 8 octants
 octants = [
@@ -139,7 +140,7 @@ octants = [
 #for P in octants:
 #    print_encoding(P, r)
 
-print()
+#print()
 
-for P in unit_lattice(r):
-    print_encoding(P, r)
+#for P in unit_lattice(r):
+#    print_encoding(P, r)
