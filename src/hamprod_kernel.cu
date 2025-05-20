@@ -1,10 +1,7 @@
 // hamprod_kernel.cu
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
-
-struct Quaternion {
-    float w, x, y, z;
-};
+#include "hamprod_kernel.h"
 
 __global__ void hamprodKernel(const Quaternion* __restrict__ A,
                               const Quaternion* __restrict__ B,
