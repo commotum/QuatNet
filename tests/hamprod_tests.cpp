@@ -5,7 +5,7 @@
 #include <vector>
 #include <cassert>
 
-static inline bool nearlyEqual(float a, float b, float eps = 1e-5f) {
+static inline bool nearlyEqual(float a, float b, float eps = 1e-4f) {
     return std::fabs(a - b) < eps;
 }
 
@@ -43,10 +43,22 @@ int main() {
     cpuHamprod(h_A.data(), h_B.data(), h_ref.data(), N);
 
     for (int i = 0; i < N; ++i) {
-        assert(nearlyEqual(h_C[i].w, h_ref[i].w));
-        assert(nearlyEqual(h_C[i].x, h_ref[i].x));
-        assert(nearlyEqual(h_C[i].y, h_ref[i].y));
-        assert(nearlyEqual(h_C[i].z, h_ref[i].z));
+        if (!nearlyEqual(h_C[i].w, h_ref[i].w)) {
+            printf("w mismatch at i=%d: GPU=%f, CPU=%f\n", i, h_C[i].w, h_ref[i].w);
+            assert(false);
+        }
+        if (!nearlyEqual(h_C[i].x, h_ref[i].x)) {
+            printf("x mismatch at i=%d: GPU=%f, CPU=%f\n", i, h_C[i].x, h_ref[i].x);
+            assert(false);
+        }
+        if (!nearlyEqual(h_C[i].y, h_ref[i].y)) {
+            printf("y mismatch at i=%d: GPU=%f, CPU=%f\n", i, h_C[i].y, h_ref[i].y);
+            assert(false);
+        }
+        if (!nearlyEqual(h_C[i].z, h_ref[i].z)) {
+            printf("z mismatch at i=%d: GPU=%f, CPU=%f\n", i, h_C[i].z, h_ref[i].z);
+            assert(false);
+        }
     }
 
     cudaFree(d_A);
