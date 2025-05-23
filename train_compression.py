@@ -136,9 +136,9 @@ def train_model(
 if __name__ == "__main__":
     import argparse
 
-    PATCH_SIZE = 128
+    PATCH_SIZE = 4
     INPUT_Q = PATCH_SIZE * PATCH_SIZE
-    HIDDEN_Q = 16
+    HIDDEN_Q = 4
 
     parser = argparse.ArgumentParser(description="Train quaternion compression autoencoder")
     parser.add_argument("--epochs", type=int, default=10, help="Number of epochs to train")
