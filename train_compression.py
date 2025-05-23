@@ -68,10 +68,17 @@ def train_model(
     if resume and latest_file.exists():
         logger.info("Resuming from %s", latest_file)
         ckpt = torch.load(latest_file, map_location=device)
-        model.load_state_dict(ckpt["model_state"])
-        start_epoch = ckpt.get("epoch", -1) + 1
-        best_loss = ckpt.get("best_loss", best_loss)
-        logger.info("Resumed at epoch %d with best loss %.6f", start_epoch, best_loss)
+        try:
+            model.load_state_dict(ckpt["model_state"])
+        except RuntimeError as err:
+            logger.warning("Failed to load checkpoint: %s", err)
+            logger.warning("Starting from scratch with randomly initialized model")
+            if device.type == "cuda":
+                torch.cuda.empty_cache()
+        else:
+            start_epoch = ckpt.get("epoch", -1) + 1
+            best_loss = ckpt.get("best_loss", best_loss)
+            logger.info("Resumed at epoch %d with best loss %.6f", start_epoch, best_loss)
 
     for epoch in range(start_epoch, start_epoch + num_epochs):
         model.train()
