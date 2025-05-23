@@ -8,6 +8,7 @@ setup(
             'src/isokawa_layer.cu',
             'src/quat_ops.cu',
             'src/hamprod_kernel.cu',
+            'src/bindings.cpp',
         ])
     ],
     cmdclass={
