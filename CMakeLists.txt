@@ -11,7 +11,6 @@ set(CMAKE_CUDA_ARCHITECTURES 86)
 
 set(QUATNET_SOURCES
     src/hamprod_kernel.cu
-    src/isokawa_layer.cu
     src/quat_ops.cu
     src/quatnet_layer.cu
 )
