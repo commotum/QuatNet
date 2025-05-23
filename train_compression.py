@@ -28,7 +28,8 @@ def train_model(
     train_loader,
     test_loader,
     *,
-    num_epochs: int = 10,
+    target_mse: float = 1e-4,  # Target MSE to reach
+    max_epochs: int = 10000,   # Maximum epochs to prevent infinite training
     learning_rate: float = 1e-3,
     lr_decay_step: int = 0,
     lr_decay_gamma: float = 0.1,
@@ -37,13 +38,14 @@ def train_model(
     resume: bool = True,
     save_all: bool = False,
 ):
-    """Train the autoencoder with checkpointing and optional LR scheduling.
+    """Train the autoencoder until target MSE is reached or max epochs.
 
     Args:
         model: The neural network to train.
         train_loader: DataLoader for training data.
         test_loader: DataLoader for validation.
-        num_epochs: Number of additional epochs to train.
+        target_mse: Target mean squared error to reach before stopping.
+        max_epochs: Maximum number of epochs to train (prevents infinite training).
         learning_rate: Optimizer learning rate.
         lr_decay_step: Step size for :class:`torch.optim.lr_scheduler.StepLR`.
             If ``0``, no scheduler is used.
@@ -95,13 +97,12 @@ def train_model(
             best_loss = ckpt.get("best_loss", best_loss)
             logger.info("Resumed at epoch %d with best loss %.6f", start_epoch, best_loss)
 
-    for epoch in range(start_epoch, start_epoch + num_epochs):
+    for epoch in range(start_epoch, max_epochs):
         model.train()
         epoch_loss = 0.0
         start = time.time()
         for batch in train_loader:
             batch = batch.to(device)
-            # Resolved conflict: Keep the batch reshaping line
             batch = batch.view(-1, batch.size(-2), 4)
             batch[:, :, 0] = 0.0  # ensure purely imaginary
             out = model(batch)
@@ -110,14 +111,15 @@ def train_model(
             loss.backward()
             optimizer.step()
             epoch_loss += loss.item()
-        logger.info("Epoch %d training loss %.6f (%.2fs)", epoch + 1, epoch_loss / len(train_loader), time.time() - start)
+        
+        avg_epoch_loss = epoch_loss / len(train_loader)
+        logger.info("Epoch %d training loss %.6f (%.2fs)", epoch + 1, avg_epoch_loss, time.time() - start)
 
         model.eval()
         val_loss = 0.0
         with torch.no_grad():
             for batch in test_loader:
                 batch = batch.to(device)
-                # Resolved conflict: Keep the batch reshaping line
                 batch = batch.view(-1, batch.size(-2), 4)
                 batch[:, :, 0] = 0.0
                 out = model(batch)
@@ -147,6 +149,11 @@ def train_model(
         if save_all:
             torch.save(model.state_dict(), save_path / f"checkpoint_epoch_{epoch+1}.pth")
 
+        # Check if we've reached target MSE
+        if avg_epoch_loss <= target_mse:
+            logger.info("Reached target MSE of %.6f at epoch %d", target_mse, epoch + 1)
+            break
+
         if device.type == "cuda":
             # release cached memory after each epoch
             torch.cuda.empty_cache()
@@ -160,7 +167,8 @@ if __name__ == "__main__":
     HIDDEN_Q = 4
 
     parser = argparse.ArgumentParser(description="Train quaternion compression autoencoder")
-    parser.add_argument("--epochs", type=int, default=10, help="Number of epochs to train")
+    parser.add_argument("--target-mse", type=float, default=1e-4, help="Target MSE to reach before stopping")
+    parser.add_argument("--max-epochs", type=int, default=10000, help="Maximum number of epochs to train")
     parser.add_argument("--save-dir", type=str, default="models", help="Directory for checkpoints")
     parser.add_argument("--no-resume", action="store_true", help="Do not resume from latest checkpoint")
     parser.add_argument("--save-all", action="store_true", help="Keep checkpoint for every epoch")
@@ -176,7 +184,8 @@ if __name__ == "__main__":
         model,
         train_loader,
         test_loader,
-        num_epochs=args.epochs,
+        target_mse=args.target_mse,
+        max_epochs=args.max_epochs,
         device=device,
         save_dir=args.save_dir,
         resume=not args.no_resume,
