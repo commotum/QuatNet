@@ -72,8 +72,8 @@ class QuaternionImageDataset(Dataset):
                 quat_patch = np.zeros((self.patch_size * self.patch_size, 4))
                 for k in range(self.patch_size):
                     for l in range(self.patch_size):
-                        idx = k * self.patch_size + l
-                        quat_patch[idx] = [0, patch[k,l,0], patch[k,l,1], patch[k,l,2]]
+                        p_idx = k * self.patch_size + l
+                        quat_patch[p_idx] = [0, patch[k, l, 0], patch[k, l, 1], patch[k, l, 2]]
                 patches.append(quat_patch)
         
         return np.array(patches)
