@@ -65,6 +65,13 @@ int main() {
 
 See `src/main.cpp` for a complete example.
 
+### Checkpointing
+The `train_compression.py` script writes checkpoints to the `models/` directory.
+Every run saves `latest.pth` and `best.pth` so training can resume where it left
+off. By default the next invocation will load `latest.pth` and continue
+training. Use `--no-resume` to start from scratch or `--save-all` to keep a
+checkpoint for every epoch.
+
 ## Motivation
 QuatNet was inspired by the ICLR 2019 paper [*Quaternion Recurrent Neural Networks*](https://arxiv.org/abs/1806.04418), which noted that Quaternion neural networks, while computationally intensive due to the Hamilton product, could outperform real-valued networks with a properly engineered CUDA kernel. The **HamProd Kernel** addresses this by providing a high-performance, GPU-accelerated implementation, enabling QNNs to process data with fewer parameters and faster training/inference times.
 
