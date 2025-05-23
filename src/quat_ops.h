@@ -1,16 +1,19 @@
 // src/quat_ops.h
 #pragma once
 #include <cuda_runtime.h> // For __device__ and float
-#include <cmath>          // For sqrtf, fabsf, expf, logf, cosf
+#include <cmath>          // For std::sqrt, std::fabs, std::exp, std::log, std::cos on host
 
-#ifndef M_PI // Ensure M_PI is defined
+// Define M_PI if not already defined (cmath should provide it)
+#ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
 struct Quaternion {
     float w, x, y, z;
 
-    __host__ __device__ Quaternion(float _w = 0.f, float _x = 0.f, float _y = 0.f, float _z = 0.f) 
+    // Unified constructor for host and device
+    // Added explicit default values for host-side usability
+    __host__ __device__ Quaternion(float _w = 0.f, float _x = 0.f, float _y = 0.f, float _z = 0.f)
         : w(_w), x(_x), y(_y), z(_z) {}
 
     __host__ __device__ Quaternion conjugate() const {
@@ -23,7 +26,11 @@ struct Quaternion {
 
     __host__ __device__ float norm() const {
         float n_sq = norm_sq();
-        return sqrtf(n_sq + 1e-12f);
+#ifdef __CUDA_ARCH__
+        return sqrtf(n_sq + 1e-12f); // Use device-specific sqrtf
+#else
+        return std::sqrt(n_sq + 1e-12f); // Use std::sqrt for host
+#endif
     }
 
     __host__ __device__ Quaternion scale(float s) const {
@@ -42,12 +49,17 @@ struct Quaternion {
     __host__ __device__ Quaternion operator+(const Quaternion& other) const {
         return {w + other.w, x + other.x, y + other.y, z + other.z};
     }
-    
+
     __host__ __device__ Quaternion operator-(const Quaternion& other) const {
         return {w - other.w, x - other.x, y - other.y, z - other.z};
     }
 };
 
-// __global__ kernel for element-wise Hamilton product (if needed standalone)
-// This was previously in hamprod_kernel.cu
-// void launchElementwiseHamprod(const Quaternion* A, const Quaternion* B, Quaternion* C, int N);
+// Device-specific sigmoid, if not already in a .cu file's __device__ scope
+#ifdef __CUDA_ARCH__
+__device__ inline float device_math_expf(float val) { // Wrapper for expf
+    return expf(val);
+}
+#else
+// No host equivalent needed here as it's for a device function in a kernel
+#endif
