@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 from pathlib import Path
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,28 +58,28 @@ class QuaternionImageDataset(Dataset):
             Array of shape (num_patches, patch_size*patch_size, 4)
             where the last dimension represents quaternion components [w,x,y,z]
         """
-        h, w, c = img.shape
-        patches = []
-        
+        h, w, _ = img.shape
+
         # Normalize RGB values to [0, 1]
         img = img.astype(np.float32) / 255.0
-        
-        # Extract patches
-        for i in range(0, h - self.patch_size + 1, self.patch_size):
-            for j in range(0, w - self.patch_size + 1, self.patch_size):
-                patch = img[i:i+self.patch_size, j:j+self.patch_size]
-                # Convert patch to quaternion representation
-                # Each pixel becomes a quaternion with w=0, x=R, y=G, z=B
-                quat_patch = np.zeros((self.patch_size * self.patch_size, 4))
-                for k in range(self.patch_size):
-                    for l in range(self.patch_size):
-                        p_idx = k * self.patch_size + l
-                        quat_patch[p_idx] = [0, patch[k, l, 0], patch[k, l, 1], patch[k, l, 2]]
-                patches.append(quat_patch)
-        
-        return np.array(patches)
 
-def create_data_loaders(train_dir, test_dir, batch_size=32, patch_size=8):
+        s = self.patch_size
+        # Reshape into (H/s, s, W/s, s, 3) then permute to (H/s, W/s, s, s, 3)
+        rgb = img.reshape(h // s, s, w // s, s, 3).transpose(0, 2, 1, 3, 4)
+        # Flatten spatial dims -> (Npatch, s*s, 3)
+        rgb = rgb.reshape(-1, s * s, 3)
+        zeros = np.zeros(rgb.shape[:-1] + (1,), dtype=rgb.dtype)
+        # Concatenate in quaternion order [w, x, y, z] where w=0
+        return np.concatenate([zeros, rgb], axis=-1)
+
+def create_data_loaders(
+    train_dir,
+    test_dir,
+    batch_size=32,
+    patch_size=8,
+    num_workers=None,
+    prefetch_factor=2,
+):
     """
     Create data loaders for training and testing.
     
@@ -93,21 +94,31 @@ def create_data_loaders(train_dir, test_dir, batch_size=32, patch_size=8):
     """
     train_dataset = QuaternionImageDataset(train_dir, patch_size)
     test_dataset = QuaternionImageDataset(test_dir, patch_size)
-    
+
+    if num_workers is None:
+        try:
+            num_workers = max(1, len(os.sched_getaffinity(0)) - 2)
+        except AttributeError:
+            num_workers = max(1, (os.cpu_count() or 1) - 2)
+
     train_loader = DataLoader(
-        train_dataset, 
-        batch_size=batch_size, 
+        train_dataset,
+        batch_size=batch_size,
         shuffle=True,
-        num_workers=4,
-        pin_memory=True
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=True,
+        prefetch_factor=prefetch_factor,
     )
     
     test_loader = DataLoader(
-        test_dataset, 
-        batch_size=batch_size, 
+        test_dataset,
+        batch_size=batch_size,
         shuffle=False,
-        num_workers=4,
-        pin_memory=True
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=True,
+        prefetch_factor=prefetch_factor,
     )
     
     return train_loader, test_loader 
