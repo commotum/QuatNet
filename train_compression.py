@@ -37,6 +37,8 @@ def train_model(model: nn.Module, train_loader, test_loader, *, num_epochs: int 
         start = time.time()
         for batch in train_loader:
             batch = batch.to(device)
+            # Resolved conflict: Keep the batch reshaping line
+            batch = batch.view(-1, batch.size(-2), 4)
             batch[:, :, 0] = 0.0  # ensure purely imaginary
             out = model(batch)
             loss = criterion(out[:, :, 1:], batch[:, :, 1:])
@@ -51,6 +53,8 @@ def train_model(model: nn.Module, train_loader, test_loader, *, num_epochs: int 
         with torch.no_grad():
             for batch in test_loader:
                 batch = batch.to(device)
+                # Resolved conflict: Keep the batch reshaping line
+                batch = batch.view(-1, batch.size(-2), 4)
                 batch[:, :, 0] = 0.0
                 out = model(batch)
                 val_loss += criterion(out[:, :, 1:], batch[:, :, 1:]).item()

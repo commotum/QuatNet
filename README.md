@@ -84,6 +84,22 @@ QuatNet/
 ├── LICENSE                  # MIT License
 ```
 
+## Running Tests
+To run the Python unit tests on a machine with CUDA-enabled PyTorch installed:
+
+```bash
+pip install -r requirements.txt  # ensures torch and pytest are available
+pytest -q
+```
+
+The C++ tests can be built and executed with CMake:
+
+```bash
+mkdir build && cd build
+cmake .. && make
+./hamprod_tests
+```
+
 ## Contributing
 Contributions are welcome! Whether you're adding new QNN layers, optimizing the **HamProd Kernel**, or testing on different GPUs, please:
 1. Fork the repo.
