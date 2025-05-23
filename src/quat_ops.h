@@ -54,6 +54,16 @@ struct Quaternion {
 };
 
 #ifdef __CUDA_ARCH__
+// Atomic addition for Quaternion values (device only)
+__device__ inline void atomicAddQuaternion(Quaternion* addr, const Quaternion& val) {
+    atomicAdd(&(addr->w), val.w);
+    atomicAdd(&(addr->x), val.x);
+    atomicAdd(&(addr->y), val.y);
+    atomicAdd(&(addr->z), val.z);
+}
+#endif
+
+#ifdef __CUDA_ARCH__
 // Device-side sigmoid for individual components
 __device__ inline float device_component_sigmoid(float val) {
     return 1.0f / (1.0f + expf(-val));
