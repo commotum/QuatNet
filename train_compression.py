@@ -51,6 +51,9 @@ def train_model(
     """
 
     logger.info("Starting training on %s", device)
+    if device.type == "cuda":
+        # free any cached memory from previous runs
+        torch.cuda.empty_cache()
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     criterion = nn.MSELoss()
@@ -117,6 +120,10 @@ def train_model(
 
         if save_all:
             torch.save(model.state_dict(), save_path / f"checkpoint_epoch_{epoch+1}.pth")
+
+        if device.type == "cuda":
+            # release cached memory after each epoch
+            torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":
