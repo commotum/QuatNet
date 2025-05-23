@@ -28,7 +28,7 @@ def train_model(
     train_loader,
     test_loader,
     *,
-    num_epochs: int = 10,
+    num_epochs: int = 50,
     learning_rate: float = 1e-3,
     device: torch.device = torch.device("cpu"),
     save_dir: str = "models",
@@ -129,9 +129,9 @@ def train_model(
 if __name__ == "__main__":
     import argparse
 
-    PATCH_SIZE = 4
+    PATCH_SIZE = 128
     INPUT_Q = PATCH_SIZE * PATCH_SIZE
-    HIDDEN_Q = 4
+    HIDDEN_Q = 16
 
     parser = argparse.ArgumentParser(description="Train quaternion compression autoencoder")
     parser.add_argument("--epochs", type=int, default=10, help="Number of epochs to train")
