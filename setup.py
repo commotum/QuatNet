@@ -52,6 +52,8 @@ setup(
             sources=[
                 'src/bindings.cpp',
                 'src/quat_ops.cu',
+                'src/quatnet_layer.cu',
+                'src/hamprod_kernel.cu',
             ],
             include_dirs=[
                 cuda_include_dir,
