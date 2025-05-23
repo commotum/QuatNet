@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 import os
 
-# Determine CUDA home robustly
 cuda_home = os.environ.get('CUDA_HOME')
 if not cuda_home:
     try:
@@ -10,95 +9,56 @@ if not cuda_home:
         if nvcc_path:
             cuda_home = os.path.dirname(os.path.dirname(nvcc_path))
     except Exception:
-        nvcc_path = None # Handle potential errors from os.popen
-
+        nvcc_path = None
     if not cuda_home and os.path.exists('/usr/local/cuda'):
         cuda_home = '/usr/local/cuda'
-    
     if not cuda_home:
-        raise EnvironmentError(
-            "CUDA_HOME environment variable is not set, nvcc was not found in PATH, "
-            "and /usr/local/cuda does not exist. Please set CUDA_HOME or ensure nvcc is in your PATH."
-        )
+        raise EnvironmentError("CUDA_HOME not set and nvcc not found.")
 
 print(f"--- Using CUDA_HOME: {cuda_home}")
 cuda_include_dir = os.path.join(cuda_home, 'include')
-cuda_lib_dir = os.path.join(cuda_home, 'lib64') # Common for Linux; adjust if needed (e.g. 'lib' on some systems)
-
-# Check if paths exist
-if not os.path.exists(cuda_include_dir):
-    raise FileNotFoundError(f"CUDA include directory not found: {cuda_include_dir}")
-if not os.path.exists(cuda_lib_dir):
-    # Try common alternatives for lib directory
+cuda_lib_dir = os.path.join(cuda_home, 'lib64')
+if not os.path.exists(cuda_lib_dir): # Try 'lib' if 'lib64' doesn't exist
     cuda_lib_dir_alt = os.path.join(cuda_home, 'lib')
     if os.path.exists(cuda_lib_dir_alt):
         cuda_lib_dir = cuda_lib_dir_alt
     else:
-        cuda_lib_dir_alt_arch = os.path.join(cuda_home, 'lib', 'x86_64-linux-gnu') # For some installations
-        if os.path.exists(cuda_lib_dir_alt_arch):
-            cuda_lib_dir = cuda_lib_dir_alt_arch
-        else:
-            raise FileNotFoundError(f"CUDA library directory not found: {cuda_lib_dir} (and alternatives)")
-print(f"--- Using CUDA Include directory: {cuda_include_dir}")
-print(f"--- Using CUDA Library directory: {cuda_lib_dir}")
+        raise FileNotFoundError(f"CUDA library directory not found: {cuda_lib_dir} or {cuda_lib_dir_alt}")
 
 
 setup(
     name='quatnet_cuda',
-    version='0.1.1', # Incremented version
+    version='0.2.0', # Version bump
     author='Commotum',
-    author_email='your_email@example.com', # Replace with actual email
-    description='CUDA Kernels for Isokawa Quaternion Layers in PyTorch',
-    long_description=open('README.md').read() if os.path.exists('README.md') else '',
-    long_description_content_type='text/markdown',
-    # packages=find_packages(where='python'), # Use if you have a 'python' subdirectory for Python modules
-    # package_dir={'': 'python'},
+    description='CUDA Kernels for Quaternion Neural Networks in PyTorch',
     ext_modules=[
         CUDAExtension(
-            name='quatnet_cuda', # This is how you'll import it: `import quatnet_cuda`
+            name='quatnet_cuda',
             sources=[
-                'src/bindings.cpp',
-                'src/isokawa_layer.cu',
-                'src/quat_ops.cu', 
+                'src/bindings.cpp',         # Pybind11 C++ to Python interface
+                'src/quatnet_layer.cu',     # Your C++ QuaternionDenseLayer (Parcollet-style)
+                'src/hamprod_kernel.cu',    # Used by quatnet_layer.cu
+                'src/quat_ops.cu',          # For Quaternion struct and basic __device__ ops
+                # Do NOT include isokawa_layer.cu if we are not using the rotational layer here
             ],
             include_dirs=[
                 cuda_include_dir,
-                os.path.abspath('src/') 
+                os.path.abspath('src/')
             ],
             library_dirs=[cuda_lib_dir],
-            libraries=['cudart'], # CUDA Runtime library
+            libraries=['cudart', 'curand'], # Added curand if your quatnet_layer.cpp uses it
             extra_compile_args={
-                'cxx': [
-                    '-g',                           # Debug symbols
-                    '-std=c++17',                   # C++ standard
-                    '-Wall',                        # Enable common warnings
-                    '-Wextra',                      # Enable more warnings
-                    '-Wno-unused-parameter',        # Suppress unused param warnings (common in stubs)
-                    '-fPIC'                         # Position Independent Code for shared libraries
-                ],
+                'cxx': ['-g', '-std=c++17', '-Wall', '-Wextra', '-Wno-unused-parameter', '-fPIC'],
                 'nvcc': [
-                    '-O3',                          # Optimization level for CUDA code
-                    '-std=c++17',                   # C++ standard for device code
-                    '-gencode=arch=compute_86,code=sm_86', # For A6000 (Ampere)
-                    # Add other architectures as needed, e.g.:
-                    # '-gencode=arch=compute_75,code=sm_75', # For Turing
-                    # '-gencode=arch=compute_70,code=sm_70', # For Volta
-                    '--expt-relaxed-constexpr',     # Allow more flexible constexpr for some C++17 features
-                    '-Xcompiler', '-Wall',          # Pass Wall to host compiler via nvcc
-                    '-Xcompiler', '-Wextra',        # Pass Wextra to host compiler via nvcc
-                    '-Xcompiler', '-Wno-unused-parameter',
-                    '-Xcompiler', '-fPIC',          # Ensure host compiler also generates PIC
-                    # '--threads', '0'  # Potentially speeds up compilation, uses all available cores
+                    '-O3', '-std=c++17',
+                    '-gencode=arch=compute_86,code=sm_86', # For A6000
+                    '--expt-relaxed-constexpr',
+                    '-Xcompiler', '-Wall', '-Wextra', '-Wno-unused-parameter', '-fPIC'
                 ]
             }
         )
     ],
-    cmdclass={
-        # use_ninja=True can significantly speed up builds if Ninja is installed
-        'build_ext': BuildExtension.with_options(use_ninja=os.environ.get('USE_NINJA', "0") == "1") 
-    },
+    cmdclass={'build_ext': BuildExtension.with_options(use_ninja=os.environ.get('USE_NINJA', "0") == "1")},
     python_requires='>=3.8',
-    install_requires=[
-        'torch>=1.9', # Or your specific PyTorch version
-    ],
+    install_requires=['torch>=1.9'],
 )

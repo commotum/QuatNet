@@ -11,8 +11,6 @@
 struct Quaternion {
     float w, x, y, z;
 
-    // Unified constructor for host and device
-    // Added explicit default values for host-side usability
     __host__ __device__ Quaternion(float _w = 0.f, float _x = 0.f, float _y = 0.f, float _z = 0.f)
         : w(_w), x(_x), y(_y), z(_z) {}
 
@@ -27,9 +25,9 @@ struct Quaternion {
     __host__ __device__ float norm() const {
         float n_sq = norm_sq();
 #ifdef __CUDA_ARCH__
-        return sqrtf(n_sq + 1e-12f); // Use device-specific sqrtf
+        return sqrtf(n_sq + 1e-12f);
 #else
-        return std::sqrt(n_sq + 1e-12f); // Use std::sqrt for host
+        return std::sqrt(n_sq + 1e-12f);
 #endif
     }
 
@@ -55,11 +53,13 @@ struct Quaternion {
     }
 };
 
-// Device-specific sigmoid, if not already in a .cu file's __device__ scope
 #ifdef __CUDA_ARCH__
-__device__ inline float device_math_expf(float val) { // Wrapper for expf
-    return expf(val);
+// Device-side sigmoid for individual components
+__device__ inline float device_component_sigmoid(float val) {
+    return 1.0f / (1.0f + expf(-val));
 }
-#else
-// No host equivalent needed here as it's for a device function in a kernel
+// Device-side tanh for individual components
+__device__ inline float device_component_tanh(float val) {
+    return tanhf(val);
+}
 #endif
