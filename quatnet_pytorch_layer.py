@@ -1,3 +1,4 @@
+import math
 import torch
 import torch.nn as nn
 
@@ -42,7 +43,26 @@ class QuatNetPytorchDenseLayer(nn.Module):
 
         self.W = nn.Parameter(torch.empty(output_dim_q, input_dim_q, 4))
         self.B = nn.Parameter(torch.zeros(output_dim_q, 4))
-        nn.init.xavier_uniform_(self.W.view(output_dim_q, -1))
+        self.quaternion_init()
+
+    def quaternion_init(self):
+        """Initialize ``self.W`` using Parcollet et al. method."""
+        n_in = float(self.input_dim_q)
+        n_out = float(self.output_dim_q)
+        sigma = 1.0 / (2.0 * (n_in + n_out)) ** 0.5
+
+        device = self.W.device
+        theta = (2 * math.pi) * torch.rand(self.W.shape[0], self.W.shape[1], device=device) - math.pi
+        phi = (2 * sigma) * torch.rand(self.W.shape[0], self.W.shape[1], device=device) - sigma
+        xyz = torch.rand(self.W.shape[0], self.W.shape[1], 3, device=device)
+        norm = torch.norm(xyz, dim=2, keepdim=True) + 1e-12
+        u = xyz / norm
+        cos_t = torch.cos(theta)
+        sin_t = torch.sin(theta)
+        self.W.data[..., 0] = phi * cos_t
+        self.W.data[..., 1] = phi * u[..., 0] * sin_t
+        self.W.data[..., 2] = phi * u[..., 1] * sin_t
+        self.W.data[..., 3] = phi * u[..., 2] * sin_t
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # x: (batch, input_dim_q, 4)

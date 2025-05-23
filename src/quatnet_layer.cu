@@ -80,26 +80,41 @@ __global__ void apply_activation_backward_kernel(
 void QuaternionDenseLayer::initializeParameters() {
     float fan_in = static_cast<float>(M_in_q);
     float fan_out = static_cast<float>(N_out_q);
-    float sigma_sq = 2.0f / (fan_in + fan_out); // Xavier/Glorot variance
-    float sigma = std::sqrt(sigma_sq);
+    float sigma = 1.0f / std::sqrt(2.0f * (fan_in + fan_out));
 
-    std::vector<float> h_W_floats(N_out_q * M_in_q * 4);
-    std::vector<float> h_b_floats(N_out_q * 4);
-    
+    std::vector<Quaternion> h_W(N_out_q * M_in_q);
+    std::vector<Quaternion> h_b(N_out_q);
+
+    auto rand_uniform = [](float a, float b) {
+        return a + (b - a) * (static_cast<float>(rand()) / RAND_MAX);
+    };
+
     srand(static_cast<unsigned int>(time(nullptr)));
-    for(size_t i = 0; i < h_W_floats.size(); ++i) {
-        // Using Box-Muller for a slightly better normal distribution
-        float u1 = static_cast<float>(rand() + 1) / (RAND_MAX + 1.0f); // Avoid log(0)
-        float u2 = static_cast<float>(rand() + 1) / (RAND_MAX + 1.0f);
-        h_W_floats[i] = sigma * std::sqrt(-2.0f * std::log(u1)) * std::cos(2.0f * M_PI * u2);
-    }
-    for(size_t i = 0; i < h_b_floats.size(); ++i) {
-        // Biases often initialized to zero or small constant/random value
-        h_b_floats[i] = 0.01f * (static_cast<float>(rand()) / RAND_MAX - 0.5f);
+
+    for (size_t i = 0; i < h_W.size(); ++i) {
+        float theta = rand_uniform(-static_cast<float>(M_PI), static_cast<float>(M_PI));
+        float phi = rand_uniform(-sigma, sigma);
+        float x = rand_uniform(0.0f, 1.0f);
+        float y = rand_uniform(0.0f, 1.0f);
+        float z = rand_uniform(0.0f, 1.0f);
+        float norm = std::sqrt(x * x + y * y + z * z) + 1e-12f;
+        float nx = x / norm;
+        float ny = y / norm;
+        float nz = z / norm;
+        float cos_theta = std::cos(theta);
+        float sin_theta = std::sin(theta);
+        h_W[i].w = phi * cos_theta;
+        h_W[i].x = phi * nx * sin_theta;
+        h_W[i].y = phi * ny * sin_theta;
+        h_W[i].z = phi * nz * sin_theta;
     }
 
-    CUDA_CHECK(cudaMemcpy(d_W, h_W_floats.data(), h_W_floats.size() * sizeof(float), cudaMemcpyHostToDevice));
-    CUDA_CHECK(cudaMemcpy(d_b, h_b_floats.data(), h_b_floats.size() * sizeof(float), cudaMemcpyHostToDevice));
+    for (size_t i = 0; i < h_b.size(); ++i) {
+        h_b[i] = {0.0f, 0.0f, 0.0f, 0.0f};
+    }
+
+    CUDA_CHECK(cudaMemcpy(d_W, h_W.data(), h_W.size() * sizeof(Quaternion), cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_b, h_b.data(), h_b.size() * sizeof(Quaternion), cudaMemcpyHostToDevice));
 }
 
 QuaternionDenseLayer::QuaternionDenseLayer(int input_dim_quats, int output_dim_quats, ActivationType act_type)
