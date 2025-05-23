@@ -1,9 +1,8 @@
 // hamprod_kernel.h
 #pragma once
 
-struct Quaternion {
-    float w, x, y, z;
-};
+
+#include "quat_ops.h"
 
 void launchHamprod(const Quaternion* A, const Quaternion* B,
                    Quaternion* C, int N);

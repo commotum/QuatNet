@@ -2,6 +2,11 @@ import math
 import torch
 import torch.nn as nn
 
+try:
+    import quatnet_cuda
+except Exception:  # noqa: S110
+    quatnet_cuda = None
+
 
 def hamilton_product(a: torch.Tensor, b: torch.Tensor) -> torch.Tensor:
     """Compute the Hamilton product between two tensors of quaternions.
@@ -33,17 +38,30 @@ def apply_activation(x: torch.Tensor, kind: str) -> torch.Tensor:
 
 
 class QuatNetPytorchDenseLayer(nn.Module):
-    """Pure PyTorch quaternion dense layer using Hamilton products."""
+    """Quaternion dense layer with optional CUDA backend."""
 
-    def __init__(self, input_dim_q: int, output_dim_q: int, activation: str = "none"):
+    def __init__(
+        self,
+        input_dim_q: int,
+        output_dim_q: int,
+        activation: str = "none",
+        use_cuda_backend: bool = False,
+    ):
         super().__init__()
         self.input_dim_q = input_dim_q
         self.output_dim_q = output_dim_q
         self.activation = activation
+        self.use_cuda_backend = use_cuda_backend
 
-        self.W = nn.Parameter(torch.empty(output_dim_q, input_dim_q, 4))
-        self.B = nn.Parameter(torch.zeros(output_dim_q, 4))
-        self.quaternion_init()
+        if use_cuda_backend:
+            if quatnet_cuda is None:
+                raise RuntimeError("quatnet_cuda module not found; can't use CUDA backend")
+            act_enum = getattr(quatnet_cuda.ActivationType, activation.upper(), quatnet_cuda.ActivationType.NONE)
+            self.layer_id = quatnet_cuda.create_dense_layer(input_dim_q, output_dim_q, int(act_enum))
+        else:
+            self.W = nn.Parameter(torch.empty(output_dim_q, input_dim_q, 4))
+            self.B = nn.Parameter(torch.zeros(output_dim_q, 4))
+            self.quaternion_init()
 
     def quaternion_init(self):
         """Initialize ``self.W`` using Parcollet et al. method."""
@@ -65,13 +83,22 @@ class QuatNetPytorchDenseLayer(nn.Module):
         self.W.data[..., 3] = phi * u[..., 2] * sin_t
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x: (batch, input_dim_q, 4)
-        w = self.W.unsqueeze(0)            # (1, out, in, 4)
-        x_exp = x.unsqueeze(1)             # (batch, 1, in, 4)
-        prod = hamilton_product(w, x_exp)  # (batch, out, in, 4)
-        s = prod.sum(dim=2)                # (batch, out, 4)
+        if self.use_cuda_backend:
+            return quatnet_cuda.dense_forward(self.layer_id, x.contiguous())
+
+        w = self.W.unsqueeze(0)
+        x_exp = x.unsqueeze(1)
+        prod = hamilton_product(w, x_exp)
+        s = prod.sum(dim=2)
         s = s + self.B
         return apply_activation(s, self.activation)
 
     def __repr__(self):
         return f"QuatNetPytorchDenseLayer(input_dim_q={self.input_dim_q}, output_dim_q={self.output_dim_q}, activation={self.activation})"
+
+    def __del__(self):
+        if getattr(self, "use_cuda_backend", False):
+            try:
+                quatnet_cuda.destroy_dense_layer(self.layer_id)
+            except Exception:
+                pass
