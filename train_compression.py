@@ -176,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr-decay-gamma", type=float, default=0.1, help="Decay factor for learning rate")
     args = parser.parse_args()
 
-    train_loader, test_loader = create_data_loaders("data/train", "data/test", batch_size=256, patch_size=PATCH_SIZE)
+    train_loader, test_loader = create_data_loaders("data/train", "data/test", batch_size=128, patch_size=PATCH_SIZE)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = CompressionAutoencoder(INPUT_Q, HIDDEN_Q)
