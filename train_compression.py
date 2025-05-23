@@ -30,12 +30,14 @@ def train_model(
     *,
     num_epochs: int = 10,
     learning_rate: float = 1e-3,
+    lr_decay_step: int = 0,
+    lr_decay_gamma: float = 0.1,
     device: torch.device = torch.device("cpu"),
     save_dir: str = "models",
     resume: bool = True,
     save_all: bool = False,
 ):
-    """Train the autoencoder with checkpointing.
+    """Train the autoencoder with checkpointing and optional LR scheduling.
 
     Args:
         model: The neural network to train.
@@ -43,6 +45,9 @@ def train_model(
         test_loader: DataLoader for validation.
         num_epochs: Number of additional epochs to train.
         learning_rate: Optimizer learning rate.
+        lr_decay_step: Step size for :class:`torch.optim.lr_scheduler.StepLR`.
+            If ``0``, no scheduler is used.
+        lr_decay_gamma: Multiplicative factor of learning rate decay.
         device: Torch device to use.
         save_dir: Directory where checkpoints are stored.
         resume: If True, resume from ``latest.pth`` in ``save_dir`` when present.
@@ -56,6 +61,16 @@ def train_model(
         torch.cuda.empty_cache()
     model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    scheduler = None
+    if lr_decay_step > 0:
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer, step_size=lr_decay_step, gamma=lr_decay_gamma
+        )
+        logger.info(
+            "Using StepLR scheduler: step_size=%d, gamma=%s",
+            lr_decay_step,
+            lr_decay_gamma,
+        )
     criterion = nn.MSELoss()
     save_path = Path(save_dir)
     save_path.mkdir(parents=True, exist_ok=True)
@@ -110,6 +125,10 @@ def train_model(
         val_loss /= len(test_loader)
         logger.info("Epoch %d validation loss %.6f", epoch + 1, val_loss)
 
+        if scheduler is not None:
+            scheduler.step()
+            logger.info("Updated learning rate to %.6e", optimizer.param_groups[0]['lr'])
+
         # Save checkpoints
         is_best = val_loss < best_loss
         if is_best:
@@ -145,6 +164,8 @@ if __name__ == "__main__":
     parser.add_argument("--save-dir", type=str, default="models", help="Directory for checkpoints")
     parser.add_argument("--no-resume", action="store_true", help="Do not resume from latest checkpoint")
     parser.add_argument("--save-all", action="store_true", help="Keep checkpoint for every epoch")
+    parser.add_argument("--lr-decay-step", type=int, default=0, help="Step size for learning rate decay (0 to disable)")
+    parser.add_argument("--lr-decay-gamma", type=float, default=0.1, help="Decay factor for learning rate")
     args = parser.parse_args()
 
     train_loader, test_loader = create_data_loaders("data/train", "data/test", batch_size=256, patch_size=PATCH_SIZE)
@@ -160,4 +181,6 @@ if __name__ == "__main__":
         save_dir=args.save_dir,
         resume=not args.no_resume,
         save_all=args.save_all,
+        lr_decay_step=args.lr_decay_step,
+        lr_decay_gamma=args.lr_decay_gamma,
     )
