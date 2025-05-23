@@ -53,8 +53,6 @@ struct Quaternion {
     }
 };
 
-<<<<<<< ours
-=======
 // Device helper declarations are visible in host compilation so kernels can be
 // parsed correctly, but their definitions are only emitted for device builds.
 __device__ inline void atomicAddQuaternion(Quaternion* addr, const Quaternion& val);
@@ -62,7 +60,6 @@ __device__ inline float device_component_sigmoid(float val);
 __device__ inline float device_component_tanh(float val);
 
 #ifdef __CUDA_ARCH__
->>>>>>> theirs
 // Atomic addition for Quaternion values (device only)
 __device__ inline void atomicAddQuaternion(Quaternion* addr, const Quaternion& val) {
     atomicAdd(&(addr->w), val.w);
@@ -80,3 +77,4 @@ __device__ inline float device_component_sigmoid(float val) {
 __device__ inline float device_component_tanh(float val) {
     return tanhf(val);
 }
+#endif
