@@ -43,7 +43,7 @@ setup(
     version='0.1.2', # Incremented version
     author='Commotum',
     author_email='your_email@example.com', 
-    description='CUDA Kernels for Isokawa Quaternion Layers in PyTorch',
+    description='CUDA kernels for QuatNet layers',
     long_description=open('README.md').read() if os.path.exists('README.md') else '',
     long_description_content_type='text/markdown',
     ext_modules=[
@@ -51,8 +51,7 @@ setup(
             name='quatnet_cuda', 
             sources=[
                 'src/bindings.cpp',
-                'src/isokawa_layer.cu',
-                'src/quat_ops.cu', 
+                'src/quat_ops.cu',
             ],
             include_dirs=[
                 cuda_include_dir,
