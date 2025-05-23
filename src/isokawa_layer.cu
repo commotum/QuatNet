@@ -1,65 +1,66 @@
 // src/isokawa_layer.cu
-#include "isokawa_layer.h"
-#include "quat_ops.h"  // Add explicit include for Quaternion operations
-#include "utils.h" // For CUDA_CHECK and M_PI
-#include <vector>         // For host-side initialization arrays
-#include <cstdlib>        // For rand, srand
-#include <cmath>          // For logf, cosf, sqrtf on host for init
+#include "isokawa_layer.h" // Kernel declarations
+#include "quat_ops.h"      // For Quaternion struct and its __device__ methods
+#include "utils.h"         // For CUDA_CHECK (though typically used in host code launching kernels)
 
-// Kernel for Isokawa rotational neuron computation (s_j part)
+// --- FORWARD PASS KERNELS ---
+
 __global__ void isokawaRotationalForwardKernel(
-    const Quaternion* __restrict__ W,
-    const Quaternion* __restrict__ X_batch,
-    const Quaternion* __restrict__ theta,
-    Quaternion* __restrict__ S_internal_batch,
-    int M_in, int N_out, int batch_size) 
+    const Quaternion* __restrict__ W_q,           // Shape: (N_out, M_in, 4)
+    const Quaternion* __restrict__ X_batch,     // Shape: (batch_size, M_in, 4)
+    const Quaternion* __restrict__ theta_q,       // Shape: (N_out, 4)
+    Quaternion* __restrict__ S_internal_batch,  // Output: (batch_size, N_out, 4)
+    int M_in,
+    int N_out,
+    int batch_size)
 {
-    int batch_idx = blockIdx.y;
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int batch_idx = blockIdx.y; // One block per batch sample in y-dimension of grid
+    int j = blockIdx.x * blockDim.x + threadIdx.x; // Output neuron index (0 to N_out-1)
 
     if (batch_idx >= batch_size || j >= N_out) {
         return;
     }
 
-    Quaternion s_j_acc = {0.f, 0.f, 0.f, 0.f};
-    const Quaternion* X_current_sample = X_batch + batch_idx * M_in;
+    Quaternion s_j_accumulator = {0.0f, 0.0f, 0.0f, 0.0f}; // Accumulator for the sum
+
+    const Quaternion* current_X_sample = X_batch + batch_idx * M_in;
+    const Quaternion* W_j_row = W_q + j * M_in; // Start of the j-th row of weights
 
     for (int i = 0; i < M_in; ++i) {
-        Quaternion w_ji = W[j * M_in + i];
-        Quaternion x_i = X_current_sample[i]; // x_i.w is assumed 0 (pure input)
+        Quaternion w_ji = W_j_row[i];      // Weight from input i to output j
+        Quaternion x_i = current_X_sample[i]; // Input i (x_i.w should be 0 for pure input)
 
-        float w_norm_val = w_ji.norm(); // Uses the stabilized norm from quat_ops.h
+        float w_norm = w_ji.norm(); // Uses stabilized norm from quat_ops.h
         Quaternion u_ji;
-        // Check against a slightly larger epsilon than in norm() itself, 
-        // as norm() already added epsilon for sqrtf.
-        if (w_norm_val < 1e-6f) { 
-            u_ji = {0.f, 0.f, 0.f, 0.f}; 
+        if (w_norm < 1e-6f) { // Avoid division by zero or issues with very small norms
+            u_ji = {0.0f, 0.0f, 0.0f, 0.0f}; // Or handle as w_ji if norm is tiny (no rotation)
         } else {
-            u_ji = w_ji.scale(1.0f / w_norm_val);
+            u_ji = w_ji.scale(1.0f / w_norm);
         }
-        
-        // Rotation: u_ji * x_i * u_ji.conjugate()
-        // Since x_i.w is 0, the result will also have w approx 0.
-        s_j_acc = s_j_acc + (u_ji * x_i * u_ji.conjugate());
+
+        // Rotational operation: u_ji * x_i * u_ji.conjugate()
+        // Since x_i.w is ~0, the result will also have w ~0.
+        s_j_accumulator = s_j_accumulator + (u_ji * x_i * u_ji.conjugate());
     }
-    
-    // theta[j].w is assumed 0 (pure threshold)
-    s_j_acc = s_j_acc - theta[j]; 
-    S_internal_batch[batch_idx * N_out + j] = s_j_acc;
+
+    // Subtract threshold (theta_q[j].w should be 0 for pure threshold)
+    s_j_accumulator = s_j_accumulator - theta_q[j];
+
+    S_internal_batch[batch_idx * N_out + j] = s_j_accumulator; // s_j will be pure
 }
 
-// Kernel for Isokawa's activation function
 __device__ float device_sigmoid(float val) {
     return 1.0f / (1.0f + expf(-val));
 }
 
 __global__ void isokawaActivationKernel(
-    const Quaternion* __restrict__ S_internal_batch,
-    Quaternion* __restrict__ Y_batch,
-    int N_out, int batch_size)
+    const Quaternion* __restrict__ S_internal_batch, // Input: (batch_size, N_out, 4)
+    Quaternion* __restrict__ Y_batch,                // Output: (batch_size, N_out, 4)
+    int N_out,
+    int batch_size)
 {
     int batch_idx = blockIdx.y;
-    int j = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.x * blockDim.x + threadIdx.x; // Output neuron index
 
     if (batch_idx >= batch_size || j >= N_out) {
         return;
@@ -68,106 +69,84 @@ __global__ void isokawaActivationKernel(
     int global_idx = batch_idx * N_out + j;
     Quaternion s_j = S_internal_batch[global_idx];
 
-    // Output is pure quaternion, s_j.w should be near zero.
+    // s_j.w should be effectively zero from previous calculations.
+    // Apply sigmoid to imaginary components, output is pure quaternion.
     Y_batch[global_idx] = {
-        0.0f, 
+        0.0f,
         device_sigmoid(s_j.x),
         device_sigmoid(s_j.y),
         device_sigmoid(s_j.z)
     };
 }
 
-// --- IsokawaQuaternionLayer Class Implementation ---
-void IsokawaQuaternionLayer::initializeParameters() {
-    float fan_in_float = static_cast<float>(M_in);
-    float fan_out_float = static_cast<float>(N_out);
-    
-    float sigma_W_sq = 2.0f / (fan_in_float + fan_out_float);
-    if (fan_in_float + fan_out_float == 0) sigma_W_sq = 0.1f; // Avoid div by zero for 0-dim layers
-    float sigma_W = std::sqrt(sigma_W_sq);
+// --- BACKWARD PASS KERNEL DEFINITIONS (STUBS for now) ---
 
-    std::vector<Quaternion> h_W(N_out * M_in);
-    srand(static_cast<unsigned int>(time(0))); 
+__global__ void isokawaActivationBackwardKernel(
+    const Quaternion* __restrict__ grad_Y_batch,
+    const Quaternion* __restrict__ S_internal_batch,
+    Quaternion* __restrict__ grad_S_internal_batch,
+    int N_out,
+    int batch_size)
+{
+    int batch_idx = blockIdx.y;
+    int j = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for (int i = 0; i < N_out * M_in; ++i) {
-        // Simple uniform init for components, then normalize on GPU, or use Box-Muller for normal
-        // For this example, let's make weights that result in norms around 1 after init.
-        // Or initialize components so that the expected norm is reasonable.
-        // Host-side Box-Muller for each component:
-        float r1 = static_cast<float>(rand()) / RAND_MAX;
-        float r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_W[i].w = sigma_W * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-        r1 = static_cast<float>(rand()) / RAND_MAX; r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_W[i].x = sigma_W * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-        r1 = static_cast<float>(rand()) / RAND_MAX; r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_W[i].y = sigma_W * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-        r1 = static_cast<float>(rand()) / RAND_MAX; r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_W[i].z = sigma_W * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
+    if (batch_idx >= batch_size || j >= N_out) {
+        return;
     }
-    CUDA_CHECK(cudaMemcpy(d_W, h_W.data(), h_W.size() * sizeof(Quaternion), cudaMemcpyHostToDevice));
+    // TODO: Implement dL/dS = dL/dY * f'(S)
+    // f'(s_comp) = sigmoid(s_comp) * (1 - sigmoid(s_comp))
+    // For now, just pass through or zero out grad_S_internal_batch[global_idx]
+    int global_idx = batch_idx * N_out + j;
+    Quaternion s_j = S_internal_batch[global_idx];
+    Quaternion grad_y_j = grad_Y_batch[global_idx];
 
-    // Initialize thresholds (pure quaternions, small random imaginary parts)
-    std::vector<Quaternion> h_theta(N_out);
-    float sigma_theta = 0.01f; 
-    for (int i = 0; i < N_out; ++i) {
-        h_theta[i].w = 0.0f; // Pure quaternion
-        float r1 = static_cast<float>(rand()) / RAND_MAX; float r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_theta[i].x = sigma_theta * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-        r1 = static_cast<float>(rand()) / RAND_MAX; r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_theta[i].y = sigma_theta * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-        r1 = static_cast<float>(rand()) / RAND_MAX; r2 = static_cast<float>(rand()) / RAND_MAX;
-        h_theta[i].z = sigma_theta * std::sqrt(-2.0f * std::log(r1 + 1e-9f)) * std::cos(2.0f * M_PI * r2);
-    }
-    CUDA_CHECK(cudaMemcpy(d_theta, h_theta.data(), h_theta.size() * sizeof(Quaternion), cudaMemcpyHostToDevice));
+    float sig_sx = device_sigmoid(s_j.x);
+    float sig_sy = device_sigmoid(s_j.y);
+    float sig_sz = device_sigmoid(s_j.z);
+
+    grad_S_internal_batch[global_idx] = {
+        0.0f, // Gradient for w component is 0 as it's a pure quaternion operation
+        grad_y_j.x * sig_sx * (1.0f - sig_sx),
+        grad_y_j.y * sig_sy * (1.0f - sig_sy),
+        grad_y_j.z * sig_sz * (1.0f - sig_sz)
+    };
 }
 
-IsokawaQuaternionLayer::IsokawaQuaternionLayer(int input_dim, int output_dim)
-    : M_in(input_dim), N_out(output_dim) {
-    if (M_in <=0 || N_out <=0) {
-        throw std::invalid_argument("Input and output dimensions must be positive.");
-    }
-    CUDA_CHECK(cudaMalloc(&d_W, static_cast<size_t>(N_out) * M_in * sizeof(Quaternion)));
-    CUDA_CHECK(cudaMalloc(&d_theta, N_out * sizeof(Quaternion)));
-    initializeParameters();
-}
+__global__ void isokawaRotationalBackwardKernel(
+    const Quaternion* __restrict__ grad_S_internal_batch,
+    const Quaternion* __restrict__ X_batch,
+    const Quaternion* __restrict__ W_q,
+    Quaternion* __restrict__ grad_X_batch,
+    Quaternion* __restrict__ grad_W_q,
+    Quaternion* __restrict__ grad_theta_q,
+    int M_in,
+    int N_out,
+    int batch_size)
+{
+    // This is the most complex kernel to implement.
+    // It requires careful derivation of quaternion calculus.
+    // For now, it's a stub. Gradients should be accumulated if multiple threads contribute.
+    // Example for grad_theta_q (simplest part):
+    int batch_idx = blockIdx.y; // Iterate over batches if one block computes all N_out grads
+    int j = blockIdx.x * blockDim.x + threadIdx.x; // Output neuron index
 
-IsokawaQuaternionLayer::~IsokawaQuaternionLayer() {
-    cudaFree(d_W);
-    cudaFree(d_theta);
-}
-
-void IsokawaQuaternionLayer::forward(const Quaternion* d_batch_X, 
-                                     Quaternion* d_batch_Y, 
-                                     int batch_size,
-                                     Quaternion* d_pre_activation_S_optional) {
-    if (batch_size <=0) {
-        throw std::invalid_argument("Batch size must be positive.");
-    }
-    
-    dim3 blockDim(256); 
-    dim3 gridDimRotational;
-    gridDimRotational.x = (N_out + blockDim.x - 1) / blockDim.x;
-    gridDimRotational.y = batch_size;
-    gridDimRotational.z = 1;
-
-    Quaternion* s_buffer_ptr;
-    bool allocated_s_buffer = false;
-    if (d_pre_activation_S_optional) {
-        s_buffer_ptr = d_pre_activation_S_optional;
-    } else {
-        CUDA_CHECK(cudaMalloc(&s_buffer_ptr, static_cast<size_t>(batch_size) * N_out * sizeof(Quaternion)));
-        allocated_s_buffer = true;
+    if (j >= N_out) { // Each thread computes one grad_theta_q[j] element
+        return;
     }
 
-    isokawaRotationalForwardKernel<<<gridDimRotational, blockDim>>>(
-        d_W, d_batch_X, d_theta, s_buffer_ptr, M_in, N_out, batch_size);
-    CUDA_CHECK(cudaGetLastError()); 
-
-    isokawaActivationKernel<<<gridDimRotational, blockDim>>>( // Same grid/block for activation
-        s_buffer_ptr, d_batch_Y, N_out, batch_size);
-    CUDA_CHECK(cudaGetLastError());
-
-    if (allocated_s_buffer) {
-        cudaFree(s_buffer_ptr);
+    // dL/d(theta_j) = sum_batch (dL/dS_j * dS_j/d(theta_j)) = sum_batch (dL/dS_j * (-1))
+    // Needs atomicAdd if multiple blocks work on same N_out, or reduction.
+    // If one block per N_out, and threads in block sum over batch_size:
+    if (threadIdx.x == 0 && blockIdx.x < N_out) { // One thread per block for one theta_j
+        Quaternion grad_theta_sum = {0.0f, 0.0f, 0.0f, 0.0f};
+        for (int b_idx = 0; b_idx < batch_size; ++b_idx) {
+            grad_theta_sum = grad_theta_sum - grad_S_internal_batch[b_idx * N_out + blockIdx.x];
+        }
+        grad_theta_q[blockIdx.x] = grad_theta_sum;
     }
+
+    // TODO: Implement grad_X_batch and grad_W_q
+    // grad_X_batch will be zeroed out by default from PyTorch if not written to.
+    // grad_W_q will be zeroed out by default.
 }

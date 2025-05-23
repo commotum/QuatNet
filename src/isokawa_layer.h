@@ -1,32 +1,45 @@
 // src/isokawa_layer.h
 #pragma once
 #include "quat_ops.h" // For Quaternion struct
-#include <curand.h>          // For weight initialization (if using cuRAND)
 
-class IsokawaQuaternionLayer {
-private:
-    Quaternion* d_W;         // Weights: N_out x M_in
-    Quaternion* d_theta;     // Thresholds: N_out (pure quaternions)
-    
-    int M_in;                // Input dimension (number of pure quaternions)
-    int N_out;               // Output dimension (number of pure quaternions)
+// --- FORWARD PASS KERNELS ---
 
-    // curandGenerator_t curand_gen; // Uncomment if using cuRAND for init
+// Kernel for Isokawa rotational neuron computation (s_j part)
+__global__ void isokawaRotationalForwardKernel(
+    const Quaternion* __restrict__ W_q,           // Shape: (N_out, M_in, 4) or flattened
+    const Quaternion* __restrict__ X_batch,     // Shape: (batch_size, M_in, 4)
+    const Quaternion* __restrict__ theta_q,       // Shape: (N_out, 4)
+    Quaternion* __restrict__ S_internal_batch,  // Output: (batch_size, N_out, 4)
+    int M_in,
+    int N_out,
+    int batch_size);
 
-    void initializeParameters(); // Helper for constructor
+// Kernel for Isokawa's activation function
+__global__ void isokawaActivationKernel(
+    const Quaternion* __restrict__ S_internal_batch, // Input: (batch_size, N_out, 4)
+    Quaternion* __restrict__ Y_batch,                // Output: (batch_size, N_out, 4)
+    int N_out,
+    int batch_size);
 
-public:
-    IsokawaQuaternionLayer(int input_dim, int output_dim);
-    ~IsokawaQuaternionLayer();
+// --- BACKWARD PASS KERNEL DECLARATIONS (STUBS for now, to be implemented) ---
 
-    void forward(const Quaternion* d_batch_X, 
-                 Quaternion* d_batch_Y, 
-                 int batch_size,
-                 Quaternion* d_pre_activation_S_optional = nullptr);
-    
-    // Expose pointers for external management or gradient updates if needed
-    Quaternion* getWeightsPtr() { return d_W; }
-    Quaternion* getThresholdsPtr() { return d_theta; }
-    int getInputDim() const { return M_in; }
-    int getOutputDim() const { return N_out; }
-};
+// Kernel to compute dL/dS_internal from dL/dY
+__global__ void isokawaActivationBackwardKernel(
+    const Quaternion* __restrict__ grad_Y_batch,         // Gradient from next layer: (batch_size, N_out, 4)
+    const Quaternion* __restrict__ S_internal_batch,     // Pre-activation values saved from forward: (batch_size, N_out, 4)
+    Quaternion* __restrict__ grad_S_internal_batch,  // Output gradient: (batch_size, N_out, 4)
+    int N_out,
+    int batch_size);
+
+// Kernel to compute dL/dX, dL/dW, dL/dTheta from dL/dS_internal
+__global__ void isokawaRotationalBackwardKernel(
+    const Quaternion* __restrict__ grad_S_internal_batch, // Gradient w.r.t. pre-threshold sum: (batch_size, N_out, 4)
+    const Quaternion* __restrict__ X_batch,               // Inputs saved from forward: (batch_size, M_in, 4)
+    const Quaternion* __restrict__ W_q,                   // Weights saved from forward: (N_out, M_in, 4)
+    // Output gradients:
+    Quaternion* __restrict__ grad_X_batch,            // Gradient w.r.t. inputs X: (batch_size, M_in, 4)
+    Quaternion* __restrict__ grad_W_q,                // Gradient w.r.t. weights W: (N_out, M_in, 4)
+    Quaternion* __restrict__ grad_theta_q,            // Gradient w.r.t. thresholds theta: (N_out, 4)
+    int M_in,
+    int N_out,
+    int batch_size);
