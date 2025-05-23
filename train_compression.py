@@ -28,7 +28,7 @@ def train_model(
     train_loader,
     test_loader,
     *,
-    num_epochs: int = 50,
+    num_epochs: int = 10,
     learning_rate: float = 1e-3,
     device: torch.device = torch.device("cpu"),
     save_dir: str = "models",
