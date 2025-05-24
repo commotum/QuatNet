@@ -31,8 +31,8 @@ def train_model(
     target_mse: float = 1e-4,  # Target MSE to reach
     max_epochs: int = 10000,   # Maximum epochs to prevent infinite training
     learning_rate: float = 1e-3,
-    lr_decay_step: int = 0,
-    lr_decay_gamma: float = 0.1,
+    lr_decay_step: int = 50,
+    lr_decay_gamma: float = 0.5,
     device: torch.device = torch.device("cpu"),
     save_dir: str = "models",
     resume: bool = True,
