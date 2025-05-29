@@ -101,11 +101,7 @@ where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\b
 In this section we propose a layered quaternion neural network model and a quaternion BP algorithm to train it. Our quaternion neuron model adopts purely imaginary quaternions as input and output signals. The output $y_j$ of quaternion neuron $j$ is expressed as
 
 $$
-\boldsymbol{s}_{j}=
-\sum_i
-\frac{\boldsymbol{w}_{ji}\,\boldsymbol{x}_i\,\overline{\boldsymbol{w}}_{ji}}
-     {\lvert \boldsymbol{w}_{ji}\rvert}
--\boldsymbol{\theta}_{j}
+\boldsymbol{s}_{j}= \sum_i \frac{\boldsymbol{w}_{ji}\,\boldsymbol{x}_i\,\overline{\boldsymbol{w}}_{ji}}{\lvert \boldsymbol{w}_{ji}\rvert}-\boldsymbol{\theta}_{j}
 $$
 
 $$
