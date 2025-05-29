@@ -100,7 +100,7 @@ where $\boldsymbol{v}_1$ and $\boldsymbol{v}_2$ are the components of vector $\b
 
 In this section we propose a layered quaternion neural network model and a quaternion BP algorithm to train it. Our quaternion neuron model adopts purely imaginary quaternions as input and output signals. The output $y_j$ of quaternion neuron $j$ is expressed as
 
-$\boldsymbol{s}_j=\sum_i \frac{\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}}{\left|\boldsymbol{w}_{j i}\right|}-\boldsymbol{\theta}_j, \quad \boldsymbol{y}_j=f\left(\boldsymbol{s}_j\right)$
+$s_j=\sum_i \frac{w_{j i} x_i \bar{w}_{j i}}{\left|w_{j i}\right|}-\theta_j, \quad y_j=f\left(s_j\right)$
 
 where $i$ denotes the indices of neurons in the previous layer, and $\boldsymbol{x}, \boldsymbol{y}, \theta, \boldsymbol{s} \in I$, $\boldsymbol{w} \in \boldsymbol{K}^4$ respectively are the vector of inputs to the neurons, the vector of outputs from the neurons, the threshold, the internal potential, and the weights of the connections to the neurons in layer $i$. The activation function $f$ is defined by
 
