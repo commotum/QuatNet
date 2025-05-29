@@ -105,7 +105,7 @@ $$
 \boldsymbol{s}_j &= \sum_i \frac{\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}}{1 + |\boldsymbol{w}_{j i}|} - \boldsymbol{\theta}_j \qquad (11) \\
 \boldsymbol{y}_j &= f(\boldsymbol{s}_j) \qquad (12)
 \end{aligned}
-  $$
+$$
 
 where $i$ denotes the indices of neurons in the previous layer, and $\boldsymbol{x}, \boldsymbol{y}, \theta, \boldsymbol{s} \in I$, $\boldsymbol{w} \in \boldsymbol{K}^4$ respectively are the vector of inputs to the neurons, the vector of outputs from the neurons, the threshold, the internal potential, and the weights of the connections to the neurons in layer $i$. The activation function $f$ is defined by
 
