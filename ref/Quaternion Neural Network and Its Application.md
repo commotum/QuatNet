@@ -105,11 +105,12 @@ $$
 \boldsymbol{s}_{\boldsymbol{j}} &=
   \sum_i \frac{\boldsymbol{w}_{ji}\,\boldsymbol{x}_i\,\overline{\boldsymbol{w}}_{ji}}
            {\left|\boldsymbol{w}_{ji}\right|}
-  - \boldsymbol{\theta}_{\boldsymbol{j}} \tag{11}\\
+  - \boldsymbol{\theta}_{\boldsymbol{j}}\\
 \boldsymbol{y}_{\boldsymbol{j}} &=
-  f\!\left(\boldsymbol{s}_{\boldsymbol{j}}\right) \tag{12}
+  f\!\left(\boldsymbol{s}_{\boldsymbol{j}}\right)
 \end{aligned}
 $$
+
 
 where $i$ denotes the indices of neurons in the previous layer, and $\boldsymbol{x}, \boldsymbol{y}, \theta, \boldsymbol{s} \in I$, $\boldsymbol{w} \in \boldsymbol{K}^4$ respectively are the vector of inputs to the neurons, the vector of outputs from the neurons, the threshold, the internal potential, and the weights of the connections to the neurons in layer $i$. The activation function $f$ is defined by
 
