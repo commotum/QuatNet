@@ -88,7 +88,7 @@ $$
 This shows the vector $\boldsymbol{v}$ rotated by the angle $2 \alpha$ around $\boldsymbol{u}$ (see Fig.1). In the case that $\boldsymbol{u}$ and $\boldsymbol{v}$ are not orthogonal, Eq.(7) is expressed as
 
 $$
-\begin{aligned} 
+\begin{aligned}
 \boldsymbol{g} & =\boldsymbol{a}\left(\boldsymbol{v}_1+\boldsymbol{v}_2\right) \overline{\boldsymbol{a}}=\boldsymbol{a} \boldsymbol{v}_1 \overline{\boldsymbol{a}}+\boldsymbol{a} \boldsymbol{v}_2 \overline{\boldsymbol{a}} \\
 &=\boldsymbol{v}_1+(\sin 2 \alpha)\left(\boldsymbol{u} \times \boldsymbol{v}_2\right)+(\cos 2 \alpha) \boldsymbol{v}_2 \qquad \qquad (10)
 \end{aligned}
@@ -102,8 +102,8 @@ In this section we propose a layered quaternion neural network model and a quate
 
 $$
 \begin{aligned}
-& \boldsymbol{s}_{=j}=\sum_i \frac{\boldsymbol{w}_{ji} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{ji}}{\left|\boldsymbol{w}_{\boldsymbol{j} \boldsymbol{i}}\right|}-\boldsymbol{\theta}_{j} &\qquad \qquad (11) \\
-& \boldsymbol{y}_{j}=f\left(\boldsymbol{s}_{j}\right) &\qquad \qquad (12)
+& \boldsymbol{s}_{\boldsymbol{j}}=\sum_i \frac{\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}}{\left|\boldsymbol{w}_{\boldsymbol{j} \boldsymbol{i}}\right|}-\boldsymbol{\theta}_{\boldsymbol{j}} &\qquad \qquad (11) \\
+& \boldsymbol{y}_{\boldsymbol{j}}=f\left(\boldsymbol{s}_{\boldsymbol{j}}\right) &\qquad \qquad (12)
 \end{aligned}
 $$
 
