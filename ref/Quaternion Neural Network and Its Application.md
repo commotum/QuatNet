@@ -102,7 +102,7 @@ In this section we propose a layered quaternion neural network model and a quate
 
 $$
 \begin{aligned}
-\boldsymbol{s}_j &= \sum_i \\
+\boldsymbol{s}_j &= \sum_i \frac{\boldsymbol{w}_{j i} \\
 \boldsymbol{y}_j &= f(\boldsymbol{s}_j)
 \end{aligned}
 $$
