@@ -102,8 +102,8 @@ In this section we propose a layered quaternion neural network model and a quate
 
 $$
 \begin{aligned}
-\boldsymbol{s}_j &= \sum_i (\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}) / |\boldsymbol{w}_{j i}| - \boldsymbol{\theta}_j \qquad (11) \\
-\boldsymbol{y}_j &= f(\boldsymbol{s}_j) \qquad (12)
+\boldsymbol{s}_j &= \sum_i \frac{\overline{\boldsymbol{w}}_{j i}}{|\boldsymbol{w}_{j i}|} \\
+\boldsymbol{y}_j &= f(\boldsymbol{s}_j)
 \end{aligned}
 $$
 
