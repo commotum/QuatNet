@@ -102,8 +102,8 @@ In this section we propose a layered quaternion neural network model and a quate
 
 $$
 \begin{aligned}
-\boldsymbol{s}_j &= \sum_i \frac{\boldsymbol{w}_{j i}}{1} \\
-\boldsymbol{y}_j &= f(\boldsymbol{s}_j)
+\boldsymbol{s}_j &= \sum_i (\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}) / |\boldsymbol{w}_{j i}| - \boldsymbol{\theta}_j \qquad (11) \\
+\boldsymbol{y}_j &= f(\boldsymbol{s}_j) \qquad (12)
 \end{aligned}
 $$
 
@@ -111,8 +111,8 @@ where $i$ denotes the indices of neurons in the previous layer, and $\boldsymbol
 
 $$
 \begin{aligned}
-\boldsymbol{s}_j &= \sum_i (\boldsymbol{w}_{j i} \boldsymbol{x}_i \overline{\boldsymbol{w}}_{j i}) / |\boldsymbol{w}_{j i}| - \boldsymbol{\theta}_j \qquad (11) \\
-\boldsymbol{y}_j &= f(\boldsymbol{s}_j) \qquad (12)
+& f(s)=h\left(s^{(i)}\right) \boldsymbol{i}+h\left(s^{(j)}\right) \boldsymbol{j}+h\left(s^{(k)}\right) \boldsymbol{k} &\qquad \qquad (13) \\
+& h(x)=\frac{1}{1+e^{-x}} &\qquad \qquad (14)
 \end{aligned}
 $$
 
