@@ -102,7 +102,7 @@ In this section we propose a layered quaternion neural network model and a quate
 
 $$
 \begin{aligned}
-& \boldsymbol{y}_{\boldsymbol{j}}=f\left(\boldsymbol{s}_{\boldsymbol{j}}\right) \qquad \qquad (12)
+& \boldsymbol{y}_{j}=f\left(\boldsymbol{s}_{j}\right) \qquad \qquad (12)
 \end{aligned}
 $$
 
